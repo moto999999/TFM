@@ -1,0 +1,51 @@
+- name: kubeadm init control-plane-1
+  shell: kubeadm init --pod-network-cidr 192.168.0.0/16 --control-plane-endpoint "{{ lb.lb_dns }}":"{{ lb.lb_port }}" --upload-certs > $HOME/kubeadm_init.log
+  when: inventory_hostname in groups['control_plane_1']
+
+- name: get create cluster stdout
+  shell: tail -26 $HOME/kubeadm_init.log
+  register: kubeadminit
+  when: inventory_hostname in groups['control_plane_1']
+
+- name: show kubeadm init stdout
+  debug:
+    msg: "{{kubeadminit.stdout_lines}}"
+  when: inventory_hostname in groups['control_plane_1']
+
+- pause: seconds=20
+
+- name: create kube dir
+  shell: mkdir -p $HOME/.kube
+  when: inventory_hostname in groups['control_plane_1']
+  
+- name: copy admin conf
+  shell: cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  when: inventory_hostname in groups['control_plane_1']
+
+- name: change permissions
+  shell: chown $(id -u):$(id -g) $HOME/.kube/config
+  when: inventory_hostname in groups['control_plane_1']
+
+- name: export KUBECONFIG var
+  shell: export KUBECONFIG=$HOME/.kube/config
+  when: inventory_hostname in groups['control_plane_1']
+
+- name: deploy networkd pods
+  shell: kubectl apply -f "https://cloud.weave.works/k8s/net"
+  when: inventory_hostname in groups['control_plane_1']
+
+- debug:
+    msg:
+    - "Waiting to all pods running."
+
+- pause: seconds=60
+
+- name: check control-plane-1 node status
+  shell: kubectl get nodes
+  register: getnodes
+  when: inventory_hostname in groups['control_plane_1']
+
+- name: show check status
+  debug:
+    msg: "{{getnodes.stdout_lines}}"
+  when: inventory_hostname in groups['control_plane_1']

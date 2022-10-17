@@ -1,0 +1,9 @@
+- name: check cluster nodes status
+  shell: kubectl get nodes
+  register: getnodes
+  when: inventory_hostname in groups['control_plane_1']
+  
+- name: show check nodes status
+  debug:
+    msg: "{{getnodes.stdout_lines}}"
+  when: inventory_hostname in groups['control_plane_1']

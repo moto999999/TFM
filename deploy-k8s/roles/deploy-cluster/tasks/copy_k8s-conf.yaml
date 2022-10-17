@@ -1,0 +1,16 @@
+- name: copy k8s config file
+  template:
+    src: k8s.conf
+    dest: '/usr/lib/sysctl.d/90-override.conf'
+    mode: 0644
+  when: inventory_hostname in groups['kube_cluster']
+
+- name: charge sysctl vars
+  shell: sysctl -p /usr/lib/sysctl.d/90-override.conf
+  register: sysctlvars
+  when: inventory_hostname in groups['kube_cluster']
+  
+- name: viewing sysctl vars stdout
+  debug:
+    msg: "{{sysctlvars.stdout}}"
+  when: inventory_hostname in groups['kube_cluster']

@@ -1,0 +1,66 @@
+# Stop and Disable Firewall service in all K8S cluster nodes
+- name: Stop service firewalld, if started
+  service:
+    name: firewalld
+    state: stopped
+    enabled: no
+  when: inventory_hostname in groups['kube_cluster']
+
+# Stop and Disable SELinux on all K8S cluster nodes
+- name: disable SELinux
+  command: setenforce 0
+  ignore_errors: yes
+  when: inventory_hostname in groups['kube_cluster']
+
+- name: disable SELinux on reboot
+  selinux:
+    state: disabled
+  when: inventory_hostname in groups['kube_cluster']
+
+# Disable swap on all K8S cluster nodes
+- name: disable swap
+  command: swapoff -a
+  when: inventory_hostname in groups['kube_cluster']
+
+# Remove swap entry from /etc/fstab from all K8S cluster nodes
+- name: Remove swapfile from /etc/fstab
+  mount:
+    name: swap
+    fstype: swap
+    state: absent
+  when: inventory_hostname in groups['kube_cluster']
+
+# Enable EPEL Repo on all K8S cluster nodes
+- name: install EPEL Repo
+  yum:
+    name: epel-release
+    state: present
+    update_cache: true
+  when: inventory_hostname in groups['kube_cluster']
+
+# Install Docker on all K8S cluster nodes using remote repo link (this is to make sure we install recommended Docker version)
+- name: install Docker from a remote repo
+  yum:
+    name: docker
+    state: present
+  when: inventory_hostname in groups['kube_cluster']
+
+# Start Docker service on all K8S cluster nodes
+- name: start Docker
+  service:
+    name: docker
+    enabled: yes
+    state: started
+  when: inventory_hostname in groups['kube_cluster']
+
+# Update all packages
+- name: upgrade all packages
+  yum:
+    name: '*'
+    state: latest
+  when: inventory_hostname in groups['kube_cluster']
+
+# Restart all VMs
+- name: Rebooting VMs
+  reboot:
+  when: inventory_hostname in groups['kube_cluster']

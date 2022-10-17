@@ -1,0 +1,5 @@
+---
+# loadbalancer info
+lb: 
+  lb_dns: 35.210.1.36
+  lb_port: 6443

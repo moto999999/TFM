@@ -1,0 +1,44 @@
+- name: get create cluster stdout
+  shell: grep -B2 "control-plane --certificate-key" $HOME/kubeadm_init.log | sed 's/\\//g' | sed ':a;N;$!ba;s/\n/ /g' | sed -e 's/ \+/ /g' | sed 's/^ //'
+  register: kubeadmjoin
+  delegate_to: master1
+    
+- name: kubeadm join control-plane-2-3
+  shell: "{{kubeadmjoin.stdout_lines[0]}} > $HOME/kubeadm_init.log"
+  when: inventory_hostname in groups['control_plane_2_and_3']
+    
+- name: get create cluster stdout
+  shell: tail -26 $HOME/kubeadm_init.log
+  when: inventory_hostname in groups['control_plane_2_and_3']
+
+- debug:
+    msg:
+    - "Waiting to all pods running."
+
+- pause: seconds=60
+
+- name: create kube dir
+  shell: mkdir -p $HOME/.kube
+  when: inventory_hostname in groups['control_plane_2_and_3']
+  
+- name: copy admin conf
+  shell: cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  when: inventory_hostname in groups['control_plane_2_and_3']
+
+- name: change permissions
+  shell: chown $(id -u):$(id -g) $HOME/.kube/config
+  when: inventory_hostname in groups['control_plane_2_and_3']
+
+- name: export KUBECONFIG var
+  shell: export KUBECONFIG=$HOME/.kube/config
+  when: inventory_hostname in groups['control_plane_2_and_3']
+
+- name: check control-plane-2 node status
+  shell: kubectl get nodes
+  register: getnodes
+  when: inventory_hostname in groups['control_plane_2_and_3']
+
+- name: show check status
+  debug:
+    msg: "{{getnodes.stdout_lines}}"
+  when: inventory_hostname in groups['control_plane_2_and_3']

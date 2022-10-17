@@ -1,0 +1,33 @@
+# Add Kubernetes YUM Repo on all K8S cluster nodes
+- name: add Kubernetes YUM repository
+  yum_repository:
+    name: Kubernetes
+    description: Kubernetes YUM repository
+    baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+    gpgkey: https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+    gpgcheck: yes
+  when: inventory_hostname in groups['kube_cluster']
+
+# Install kubelet on all K8S cluster nodes
+- name: install kubelet
+  yum:
+    name:
+      - kubelet
+    state: present
+  when: inventory_hostname in groups['kube_cluster']
+
+# Install kubeadm on all K8S cluster nodes
+- name: install kubadm
+  yum:
+    name:
+      - kubeadm
+    state: present
+  when: inventory_hostname in groups['kube_cluster']
+
+# Start kubelet service on all K8S cluster nodes
+- name: start kubelet
+  service:
+    name: kubelet
+    enabled: yes
+    state: started
+  when: inventory_hostname in groups['kube_cluster']

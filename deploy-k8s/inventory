@@ -1,0 +1,22 @@
+[kube_cluster]
+master1 ansible_host=10.0.0.2 ansible_user=juan1999l
+master2 ansible_host=10.0.0.6 ansible_user=juan1999l
+master3 ansible_host=10.0.0.8 ansible_user=juan1999l
+worker1 ansible_host=10.0.0.3 ansible_user=juan1999l
+worker2 ansible_host=10.0.0.4 ansible_user=juan1999l
+ 
+[master]
+master1
+master2
+master3
+ 
+[worker]
+worker1
+worker2
+
+[control_plane_1]
+master1
+
+[control_plane_2_and_3]
+master2
+master3

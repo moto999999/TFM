@@ -1,0 +1,11 @@
+- name: Change master names
+  hostname:
+    name: "{{ item }}"
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: Change worker names
+  hostname:
+    name: "{{ item }}"
+  with_items:
+    - "{{ groups['worker'] }}"
