@@ -76,3 +76,9 @@ resource "google_compute_instance" "instance-worker" {
   }
 
 }
+
+resource "google_compute_project_metadata" "metadata" {
+  metadata = {
+    ssh-keys = "${var.ssh_user}:${file(var.ssh_pub_key_file)}"
+  }
+}
