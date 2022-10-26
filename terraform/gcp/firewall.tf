@@ -20,8 +20,8 @@ resource "google_compute_firewall" "firewall_rule_bastion_inside" {
     protocol = "tcp"
     ports    = ["22"]
   }
-  source_tags = ["bastion"]
-  target_tags = ["control-plane", "worker"]
+  source_tags = [var.bastion_tag]
+  target_tags = [var.control_plane_tag, var.worker_tag]
 }
 
 resource "google_compute_firewall" "firewall_rule_api_server" {
@@ -34,7 +34,7 @@ resource "google_compute_firewall" "firewall_rule_api_server" {
     ports    = ["6443"]
   }
   source_ranges = ["0.0.0.0/0"]
-  target_tags   = ["control-plane"]
+  target_tags   = [var.control_plane_tag]
 }
 
 resource "google_compute_firewall" "firewall_rule_etcd" {
@@ -47,8 +47,8 @@ resource "google_compute_firewall" "firewall_rule_etcd" {
     ports    = ["2379-2380"]
   }
 
-  source_tags = ["control-plane", "worker"]
-  target_tags = ["control-plane"]
+  source_tags = [var.control_plane_tag, var.worker_tag]
+  target_tags = [var.control_plane_tag]
 }
 
 resource "google_compute_firewall" "firewall_rule_kubelet_api" {
@@ -61,8 +61,8 @@ resource "google_compute_firewall" "firewall_rule_kubelet_api" {
     ports    = ["10250"]
   }
 
-  source_tags = ["control-plane", "worker"]
-  target_tags = ["control-plane", "worker"]
+  source_tags = [var.control_plane_tag, var.worker_tag]
+  target_tags = [var.control_plane_tag, var.worker_tag]
 }
 
 resource "google_compute_firewall" "firewall_rule_kube_scheduler" {
@@ -75,8 +75,8 @@ resource "google_compute_firewall" "firewall_rule_kube_scheduler" {
     ports    = ["10259"]
   }
 
-  source_tags = ["control-plane"]
-  target_tags = ["control-plane"]
+  source_tags = [var.control_plane_tag]
+  target_tags = [var.control_plane_tag]
 }
 
 resource "google_compute_firewall" "firewall_rule_kube_controller_manager" {
@@ -89,8 +89,8 @@ resource "google_compute_firewall" "firewall_rule_kube_controller_manager" {
     ports    = ["10257"]
   }
 
-  source_tags = ["control-plane"]
-  target_tags = ["control-plane"]
+  source_tags = [var.control_plane_tag]
+  target_tags = [var.control_plane_tag]
 }
 
 resource "google_compute_firewall" "firewall_rule_nodeport_services" {
@@ -103,6 +103,6 @@ resource "google_compute_firewall" "firewall_rule_nodeport_services" {
     ports    = ["30000-32767"]
   }
 
-  source_tags = ["worker"]
-  target_tags = ["control-plane", "worker"]
+  source_tags = [var.worker_tag]
+  target_tags = [var.control_plane_tag, var.worker_tag]
 }
