@@ -1,11 +1,9 @@
 - name: Change master names
   hostname:
-    name: "{{ item }}"
-  with_items:
-    - "{{ groups['master'] }}"
+    name: "{{ inventory_hostname }}"
+  when: inventory_hostname in groups['master']
 
 - name: Change worker names
   hostname:
-    name: "{{ item }}"
-  with_items:
-    - "{{ groups['worker'] }}"
+    name: "{{ inventory_hostname }}"
+  when: inventory_hostname in groups['worker']
