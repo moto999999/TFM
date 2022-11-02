@@ -24,23 +24,55 @@ resource "google_compute_instance" "instance-bastion" {
 
 }
 
-
-resource "google_compute_instance" "instance-control-plane" {
-  count = 3
-
-  name         = "control-plane-${count.index}"
+# instance template for control plane
+resource "google_compute_instance_template" "control_plane" {
+  name         = "control-plane-template"
   machine_type = var.machine_type
-  zone         = var.zone
 
   tags = [var.control_plane_tag]
 
   // Rocky linux as image
-  boot_disk {
-    initialize_params {
-      image = var.image
-      size  = var.disk_size_gb["control_plane"]
-      type  = var.disk_type["ssd"]
-    }
+  disk {
+    source_image = var.image
+    disk_size_gb = var.disk_size_gb["control_plane"]
+    disk_type    = var.disk_type["ssd"]
+    boot         = true
+  }
+
+  // No public IP
+  network_interface {
+    network    = google_compute_network.k8s_network.id
+    subnetwork = google_compute_subnetwork.nodes_subnet.id
+  }
+}
+
+# MIG for control planes
+resource "google_compute_region_instance_group_manager" "mig_control_plane" {
+  name   = "k8s-control-plane-mig"
+  region = var.region
+  version {
+    instance_template = google_compute_instance_template.control_plane.id
+    name              = "control-plane"
+  }
+  base_instance_name = "control-plane"
+  target_size        = var.number_control_planes
+
+  wait_for_instances = true
+}
+
+# instance template for worker
+resource "google_compute_instance_template" "worker" {
+  name         = "worker-template"
+  machine_type = var.machine_type
+
+  tags = [var.worker_tag]
+
+  // Rocky linux as image
+  disk {
+    source_image = var.image
+    disk_size_gb = var.disk_size_gb["worker"]
+    disk_type    = var.disk_type["ssd"]
+    boot         = true
   }
 
   // No public IP
@@ -51,30 +83,18 @@ resource "google_compute_instance" "instance-control-plane" {
 
 }
 
-resource "google_compute_instance" "instance-worker" {
-  count = 2
-
-  name         = "worker-${count.index}"
-  machine_type = var.machine_type
-  zone         = var.zone
-
-  tags = [var.worker_tag]
-
-  // Rocky linux as image
-  boot_disk {
-    initialize_params {
-      image = var.image
-      size  = var.disk_size_gb["worker"]
-      type  = var.disk_type["ssd"]
-    }
+# MIG for workers
+resource "google_compute_region_instance_group_manager" "mig_worker" {
+  name   = "k8s-worker-mig"
+  region = var.region
+  version {
+    instance_template = google_compute_instance_template.worker.id
+    name              = "worker"
   }
+  base_instance_name = "worker"
+  target_size        = var.number_workers
 
-  // No public IP
-  network_interface {
-    network    = google_compute_network.k8s_network.id
-    subnetwork = google_compute_subnetwork.nodes_subnet.id
-  }
-
+  wait_for_instances = true
 }
 
 resource "google_compute_project_metadata" "metadata" {

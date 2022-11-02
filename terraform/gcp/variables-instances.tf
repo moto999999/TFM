@@ -34,3 +34,13 @@ variable "ssh_pub_key_file" {
   type  = string
   default = "../../ssh_key/admin.pub"
 }
+
+variable "number_control_planes" {
+  type = number
+  default = 3
+}
+
+variable "number_workers" {
+  type = number
+  default = 2
+}
