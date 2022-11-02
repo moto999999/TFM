@@ -5,6 +5,10 @@
     mode: 0644
   when: inventory_hostname in groups['kube_cluster']
 
+- name: modprobe br_netfilter
+  command: modprobe br_netfilter
+  when: inventory_hostname in groups['kube_cluster']
+
 - name: charge sysctl vars
   shell: sysctl -p /usr/lib/sysctl.d/90-override.conf
   register: sysctlvars
