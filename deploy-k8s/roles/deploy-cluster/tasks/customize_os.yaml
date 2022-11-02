@@ -9,11 +9,11 @@
 # Stop and Disable SELinux on all K8S cluster nodes
 - name: disable SELinux
   command: setenforce 0
-  ignore_errors: yes
+  ignore_errors: true
   when: inventory_hostname in groups['kube_cluster']
 
 - name: disable SELinux on reboot
-  selinux:
+  ansible.posix.selinux:
     state: disabled
   when: inventory_hostname in groups['kube_cluster']
 
@@ -30,27 +30,49 @@
     state: absent
   when: inventory_hostname in groups['kube_cluster']
 
-# Enable EPEL Repo on all K8S cluster nodes
-- name: install EPEL Repo
+# Install yum-utils
+- name: Install yum-utils
   yum:
-    name: epel-release
-    state: present
-    update_cache: true
-  when: inventory_hostname in groups['kube_cluster']
-
-# Install Docker on all K8S cluster nodes using remote repo link (this is to make sure we install recommended Docker version)
-- name: install Docker from a remote repo
-  yum:
-    name: docker
+    name: yum-utils
     state: present
   when: inventory_hostname in groups['kube_cluster']
 
-# Start Docker service on all K8S cluster nodes
-- name: start Docker
+# Set up docker repository
+- name: set up docker repository
+  command: sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+  when: inventory_hostname in groups['kube_cluster']
+
+# Install container.d on all K8S cluster nodes
+- name: install container.d from docker repo
+  yum:
+    name: containerd.io
+    state: present
+  when: inventory_hostname in groups['kube_cluster']
+
+- name: Activate containerd cri plugin
+  lineinfile:
+    path: /etc/containerd/config.toml
+    search_string: 'disabled_plugins = ["cri"]'
+    line: 'disabled_plugins = []'
+  when: inventory_hostname in groups['kube_cluster']
+
+- name: Configure the systemd cgroup driver
+  lineinfile:
+    path: /etc/containerd/config.toml
+    insertafter: 'disabled_plugins = ["cri"]'
+    line: "{{ item }}"
+  loop:
+    - '[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]'
+    - '  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]'
+    - '    SystemdCgroup = true'
+  when: inventory_hostname in groups['kube_cluster']
+
+# Start containerd service on all K8S cluster nodes
+- name: start containerd
   service:
-    name: docker
+    name: containerd
     enabled: yes
-    state: started
+    state: restarted
   when: inventory_hostname in groups['kube_cluster']
 
 # Update all packages
