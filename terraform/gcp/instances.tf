@@ -27,7 +27,7 @@ resource "google_compute_instance" "instance-bastion" {
     mode   = "READ_WRITE"
   }
 
-  metadata_startup_script = "sudo dnf install ansible-core nano -y && printf 'Host *\n\tUser admin\n\tIdentityFile ~/.ssh/admin\n' > /home/admin/.ssh/config"
+  metadata_startup_script = "sudo dnf install ansible-core nano -y && ansible-galaxy collection install ansible.posix && printf 'Host *\n\tUser admin\n\tIdentityFile ~/.ssh/admin\n' > /home/admin/.ssh/config"
 }
 
 # instance template for control plane
@@ -51,7 +51,7 @@ resource "google_compute_instance_template" "control_plane" {
     subnetwork = google_compute_subnetwork.nodes_subnet.id
   }
 
-  metadata_startup_script = "sudo dnf install ansible-core nano -y"
+  metadata_startup_script = "sudo dnf install ansible-core nano -y && ansible-galaxy collection install ansible.posix"
 }
 
 # MIG for control planes
@@ -89,7 +89,7 @@ resource "google_compute_instance_template" "worker" {
     subnetwork = google_compute_subnetwork.nodes_subnet.id
   }
 
-  metadata_startup_script = "sudo dnf install ansible-core nano -y"
+  metadata_startup_script = "sudo dnf install ansible-core nano -y && ansible-galaxy collection install ansible.posix"
 }
 
 # MIG for workers
