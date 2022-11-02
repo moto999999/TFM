@@ -22,6 +22,11 @@ resource "google_compute_instance" "instance-bastion" {
     }
   }
 
+  attached_disk {
+    source = google_compute_disk.nfs_disk.self_link
+    mode   = "READ_WRITE"
+  }
+
 }
 
 # instance template for control plane

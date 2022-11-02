@@ -15,8 +15,9 @@ variable "disk_size_gb" {
   type = map(any)
   default = {
     control_plane = "50"
-    worker        = "75"
+    worker        = "50"
     bastion       = "25"
+    nfs           = "100"
   }
 }
 
