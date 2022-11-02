@@ -1,9 +1,9 @@
 [kube_cluster]
-master1 ansible_host=10.0.0.2 ansible_user=juan1999l
-master2 ansible_host=10.0.0.6 ansible_user=juan1999l
-master3 ansible_host=10.0.0.8 ansible_user=juan1999l
-worker1 ansible_host=10.0.0.3 ansible_user=juan1999l
-worker2 ansible_host=10.0.0.4 ansible_user=juan1999l
+master1 ansible_host=ip_master_1 ansible_user=admin
+master2 ansible_host=ip_master_2 ansible_user=admin
+master3 ansible_host=ip_master_3 ansible_user=admin
+worker1 ansible_host=ip_worker_1 ansible_user=admin
+worker2 ansible_host=ip_worker_2 ansible_user=admin
  
 [master]
 master1
