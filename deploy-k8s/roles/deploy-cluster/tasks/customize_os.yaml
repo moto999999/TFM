@@ -17,17 +17,28 @@
     state: disabled
   when: inventory_hostname in groups['kube_cluster']
 
+- name: copy kernel modules config file
+  template:
+    src: kernel-modules.conf
+    dest: '/etc/modules-load.d/k8s.conf'
+    mode: 0644
+  when: inventory_hostname in groups['kube_cluster']
+
 # Disable swap on all K8S cluster nodes
 - name: disable swap
   command: swapoff -a
   when: inventory_hostname in groups['kube_cluster']
 
-# Remove swap entry from /etc/fstab from all K8S cluster nodes
-- name: Remove swapfile from /etc/fstab
-  mount:
-    name: swap
-    fstype: swap
-    state: absent
+- name: disable swap
+  command: 'sed -i "/ swap / s/^\(.*\)$/#\1/g" /etc/fstab'
+  when: inventory_hostname in groups['kube_cluster']
+
+  # https://discuss.kubernetes.io/t/working-with-registries-and-containerd-in-microk8s/6305/10
+- name: Remove IPv6 from /etc/hosts
+  lineinfile:
+    path: /etc/hosts
+    search_string: '::1         localhost localhost.localdomain localhost6 localhost6.localdomain6'
+    line: '#::1         localhost localhost.localdomain localhost6 localhost6.localdomain6'
   when: inventory_hostname in groups['kube_cluster']
 
 # Install yum-utils
@@ -49,22 +60,15 @@
     state: present
   when: inventory_hostname in groups['kube_cluster']
 
-- name: Activate containerd cri plugin
-  lineinfile:
-    path: /etc/containerd/config.toml
-    search_string: 'disabled_plugins = ["cri"]'
-    line: 'disabled_plugins = []'
+- name: generate new configuration for container.d
+  shell: containerd config default > /etc/containerd/config.toml
   when: inventory_hostname in groups['kube_cluster']
 
-- name: Configure the systemd cgroup driver
+- name: enable the systemd cgroup driver
   lineinfile:
     path: /etc/containerd/config.toml
-    insertafter: 'disabled_plugins = ["cri"]'
-    line: "{{ item }}"
-  loop:
-    - '[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]'
-    - '  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]'
-    - '    SystemdCgroup = true'
+    search_string: 'SystemdCgroup = false'
+    line: '            SystemdCgroup = true'
   when: inventory_hostname in groups['kube_cluster']
 
 # Start containerd service on all K8S cluster nodes
