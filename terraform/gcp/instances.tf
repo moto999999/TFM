@@ -65,6 +65,11 @@ resource "google_compute_region_instance_group_manager" "mig_control_plane" {
   base_instance_name = "control-plane"
   target_size        = var.number_control_planes
 
+  named_port {
+    name = "api-server"
+    port = 6443
+  }
+
   wait_for_instances = true
 }
 

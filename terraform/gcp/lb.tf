@@ -24,9 +24,9 @@ resource "google_compute_target_tcp_proxy" "tcp_proxy_control_plane" {
 resource "google_compute_backend_service" "k8s_lb_api_server" {
   name                  = "tcp-proxy-api-server-backend-service"
   protocol              = "TCP"
-  port_name             = "tcp"
+  port_name             = "api-server"
   load_balancing_scheme = "EXTERNAL"
-  timeout_sec           = 10
+  timeout_sec           = 9
   health_checks         = [google_compute_health_check.api_server.id]
   backend {
     group           = google_compute_region_instance_group_manager.mig_control_plane.instance_group
@@ -38,10 +38,12 @@ resource "google_compute_backend_service" "k8s_lb_api_server" {
 
 resource "google_compute_health_check" "api_server" {
   name               = "tcp-proxy-health-check"
-  timeout_sec        = 1
-  check_interval_sec = 1
+  timeout_sec        = 3
+  check_interval_sec = 3
+  healthy_threshold = 3
+  unhealthy_threshold = 5
 
-  tcp_health_check {
+  ssl_health_check {
     port = "6443"
   }
 }
