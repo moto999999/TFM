@@ -1,6 +1,5 @@
 ---
 # Deploy cluster
-- include_tasks: customize_hostname.yaml
 - include_tasks: customize_os.yaml
 - include_tasks: install-kube-tools.yaml
 - include_tasks: copy_k8s-conf.yaml
