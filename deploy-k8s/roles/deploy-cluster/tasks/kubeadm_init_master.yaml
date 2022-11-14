@@ -12,8 +12,6 @@
     msg: "{{kubeadminit.stdout_lines}}"
   when: inventory_hostname in groups['control_plane_1']
 
-- pause: seconds=20
-
 - name: create kube dir
   shell: mkdir -p $HOME/.kube
   when: inventory_hostname in groups['control_plane_1']
@@ -30,15 +28,17 @@
   shell: export KUBECONFIG=$HOME/.kube/config
   when: inventory_hostname in groups['control_plane_1']
 
-- name: deploy networkd pods
-  shell: kubectl apply -f "https://cloud.weave.works/k8s/net"
+- name: deploy cni (calico)
+  shell: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
   when: inventory_hostname in groups['control_plane_1']
 
-- debug:
-    msg:
-    - "Waiting to all pods running."
+- name: wait until calico is deployed
+  shell: kubectl rollout status deployment calico-kube-controllers -n kube-system
+  when: inventory_hostname in groups['control_plane_1']
 
-- pause: seconds=60
+- name: wait for all nodes to be ready
+  shell: kubectl wait --for=condition=Ready nodes --all
+  when: inventory_hostname in groups['control_plane_1']
 
 - name: check control-plane-1 node status
   shell: kubectl get nodes

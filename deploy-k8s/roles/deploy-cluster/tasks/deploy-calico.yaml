@@ -1,3 +1,0 @@
-- name: deploy calico
-  shell: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
-  when: inventory_hostname in groups['control_plane_1']
