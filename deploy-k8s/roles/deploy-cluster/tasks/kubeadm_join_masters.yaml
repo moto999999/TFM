@@ -11,12 +11,6 @@
   shell: tail -26 $HOME/kubeadm_init.log
   when: inventory_hostname in groups['control_plane_2_and_3']
 
-- debug:
-    msg:
-    - "Waiting to all pods running."
-
-- pause: seconds=60
-
 - name: create kube dir
   shell: mkdir -p $HOME/.kube
   when: inventory_hostname in groups['control_plane_2_and_3']
@@ -33,12 +27,17 @@
   shell: export KUBECONFIG=$HOME/.kube/config
   when: inventory_hostname in groups['control_plane_2_and_3']
 
-- name: check control-plane-2 node status
+- name: wait for all nodes to be ready
+  shell: kubectl wait --for=condition=Ready nodes --all
+  register: nodes_ready
+  when: inventory_hostname in groups['control_plane_2']
+
+- name: get control-plane-2 node status
   shell: kubectl get nodes
   register: getnodes
-  when: inventory_hostname in groups['control_plane_2_and_3']
+  when: inventory_hostname in groups['control_plane_2']
 
 - name: show check status
   debug:
     msg: "{{getnodes.stdout_lines}}"
-  when: inventory_hostname in groups['control_plane_2_and_3']
+  when: inventory_hostname in groups['control_plane_2']

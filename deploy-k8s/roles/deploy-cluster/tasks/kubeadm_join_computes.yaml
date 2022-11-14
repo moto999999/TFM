@@ -17,8 +17,17 @@
     msg: "{{kubeadmjoin.stdout_lines}}"
   when: inventory_hostname in groups['worker']
 
-- debug:
-    msg:
-    - "Waiting to all pods running."
+- name: wait for all nodes to be ready
+  shell: kubectl wait --for=condition=Ready nodes --all
+  register: nodes_ready
+  when: inventory_hostname in groups['control_plane_2']
 
-- pause: seconds=60
+- name: get worker node status
+  shell: kubectl get nodes
+  register: getnodes
+  when: inventory_hostname in groups['control_plane_2']
+
+- name: show check status
+  debug:
+    msg: "{{getnodes.stdout_lines}}"
+  when: inventory_hostname in groups['control_plane_2']
