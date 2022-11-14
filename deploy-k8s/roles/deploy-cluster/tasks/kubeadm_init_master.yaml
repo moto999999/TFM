@@ -1,5 +1,5 @@
 - name: kubeadm init control-plane-1
-  shell: kubeadm init --pod-network-cidr 192.168.0.0/16 --control-plane-endpoint "{{ lb.lb_dns }}":"{{ lb.lb_port }}" --upload-certs > $HOME/kubeadm_init.log
+  shell: kubeadm init --config /root/kubelet_config.yaml --upload-certs > $HOME/kubeadm_init.log
   when: inventory_hostname in groups['control_plane_1']
 
 - name: get create cluster stdout

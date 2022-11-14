@@ -22,3 +22,10 @@
   debug:
     msg: "{{sysctlvars.stdout}}"
   when: inventory_hostname in groups['kube_cluster']
+
+- name: Copy kubelet config
+  template:
+    src: kubelet_config.yaml
+    dest: /root/kubelet_config.yaml
+    mode: 0644
+  when: inventory_hostname in groups['control_plane_1']
