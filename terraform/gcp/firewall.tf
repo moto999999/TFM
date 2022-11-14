@@ -121,3 +121,17 @@ resource "google_compute_firewall" "firewall_rule_nodeport_services" {
   source_tags = [var.worker_tag]
   target_tags = [var.control_plane_tag, var.worker_tag]
 }
+
+resource "google_compute_firewall" "firewall_rule_bgp" {
+  name        = "bgp"
+  network     = google_compute_network.k8s_network.id
+  description = "Creates firewall rule for BGP protocol"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["179"]
+  }
+
+  source_tags = [var.control_plane_tag, var.worker_tag]
+  target_tags = [var.control_plane_tag, var.worker_tag]
+}
