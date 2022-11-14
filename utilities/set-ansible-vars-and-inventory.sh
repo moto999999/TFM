@@ -1,3 +1,5 @@
+git checkout origin/master ../deploy-k8s/inventory ../deploy-k8s/roles/deploy-cluster/vars/main.yaml
+
 bastion=`cd ../terraform/gcp && terraform output | tr -d '"' | grep "bastion:" | sed 's/^.*: //'`
 lb_ip=`cd ../terraform/gcp && terraform output | tr -d '"' | grep "lb_ip:" | sed 's/^.*: //'`
 control_plane=`cd ../terraform/gcp && terraform output | tr -d '"' | grep "control-plane-.*:" | sed 's/^.*: //' | tr -d ','`
