@@ -28,12 +28,16 @@
   shell: export KUBECONFIG=$HOME/.kube/config
   when: inventory_hostname in groups['control_plane_1']
 
-- name: deploy cni (calico)
-  shell: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+- name: Add the Calico helm repo
+  shell: /var/lib/snapd/snap/bin/helm repo add projectcalico https://projectcalico.docs.tigera.io/charts
   when: inventory_hostname in groups['control_plane_1']
 
-- name: wait until calico is deployed
-  shell: kubectl rollout status deployment calico-kube-controllers -n kube-system
+- name: Create calico-system namespace
+  shell: kubectl create namespace calico-system
+  when: inventory_hostname in groups['control_plane_1']
+
+- name: Install calico (cni) with helm
+  shell: /var/lib/snapd/snap/bin/helm install calico projectcalico/tigera-operator --version v3.24.2 --namespace calico-system
   when: inventory_hostname in groups['control_plane_1']
 
 - name: wait for all nodes to be ready
