@@ -9,20 +9,51 @@
   when: inventory_hostname in groups['kube_cluster']
 
 # Install kubelet on all K8S cluster nodes
-- name: install kubelet
+- name: install kubelet and kubeadm
   yum:
     name:
-      - kubelet
+      - "{{ item }}"
     state: present
+  with_items: 
+    - kubelet
+    - kubeadm
   when: inventory_hostname in groups['kube_cluster']
 
-# Install kubeadm on all K8S cluster nodes
-- name: install kubadm
+# Install epel-release on all K8S cluster nodes and bastion
+- name: install epel-release
   yum:
     name:
-      - kubeadm
+      - epel-release
     state: present
-  when: inventory_hostname in groups['kube_cluster']
+  when: inventory_hostname in groups['kube_cluster'] or inventory_hostname in groups['bastion']
+
+# Install snapd on all K8S cluster nodes and bastion
+- name: install snapd
+  yum:
+    name:
+      - snapd
+    state: present
+  when: inventory_hostname in groups['kube_cluster'] or inventory_hostname in groups['bastion']
+
+# Start snapd service on all K8S cluster nodes
+- name: start snapd
+  service:
+    name: snapd
+    enabled: yes
+    state: started
+  when: inventory_hostname in groups['kube_cluster'] or inventory_hostname in groups['bastion']
+
+- name: Create a symbolic link /snap
+  file:
+    src: /var/lib/snapd/snap
+    dest: /snap
+    state: link
+  when: inventory_hostname in groups['kube_cluster'] or inventory_hostname in groups['bastion']
+
+# Install helm on all K8S cluster nodes and bastion
+- name: install helm
+  shell: snap install helm --classic
+  when: inventory_hostname in groups['kube_cluster'] or inventory_hostname in groups['bastion']
 
 # Start kubelet service on all K8S cluster nodes
 - name: start kubelet
