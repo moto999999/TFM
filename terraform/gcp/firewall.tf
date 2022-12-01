@@ -63,3 +63,22 @@ resource "google_compute_firewall" "firewall_rule_all_all_internal" {
   source_tags = [var.control_plane_tag, var.worker_tag]
   target_tags = [var.control_plane_tag, var.worker_tag]
 }
+
+resource "google_compute_firewall" "firewall_rule_nfs_server" {
+  name        = "nfs-server"
+  network     = google_compute_network.k8s_network.id
+  description = "Creates firewall rule for nfs server"
+
+  allow {
+    protocol = "tcp"
+    ports = [ "111", "2049" ]
+  }
+
+  allow {
+    protocol = "udp"
+    ports = [ "111", "2049" ]
+  }
+
+  source_tags = [var.control_plane_tag, var.worker_tag, var.bastion_tag]
+  target_tags = [var.control_plane_tag, var.worker_tag, var.bastion_tag]
+}

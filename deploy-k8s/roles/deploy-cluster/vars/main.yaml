@@ -3,3 +3,10 @@
 lb: 
   lb_dns: ip_lb
   lb_port: 6443
+
+nfs_disk:
+  partition: /dev/sdb
+  path: /mnt/disks/pv-disk
+
+bastion:
+  internal_ip: ip_bastion_internal

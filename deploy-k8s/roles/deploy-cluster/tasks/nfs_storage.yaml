@@ -1,0 +1,63 @@
+- name: Create path {{ nfs_disk.path }}
+  file:
+    path: "{{ nfs_disk.path }}"
+    state: directory
+    mode: a+w
+  when: inventory_hostname in groups['kube_cluster'] or inventory_hostname in groups['bastion']
+
+- name: Create ext4 filesystem on {{ nfs_disk.partition }}
+  shell: sudo mkfs.ext4 -m 0 -E lazy_itable_init=0,lazy_journal_init=0,discard {{ nfs_disk.partition }}
+  when: inventory_hostname in groups['bastion']
+  ignore_errors: true
+
+- name: Get UUID of disk
+  shell: blkid {{ nfs_disk.partition }} -s UUID -o value
+  register: uuid
+  when: inventory_hostname in groups['bastion']
+
+- name: Add pv disk to /etc/fstab
+  ansible.posix.mount:
+    path: "{{ nfs_disk.path }}"
+    src: "UUID={{ uuid.stdout }}"
+    fstype: ext4
+    state: present
+    opts: discard,defaults,nofail
+  when: inventory_hostname in groups['bastion']
+
+- name: Install nfs-utils
+  yum:
+    name:
+      - nfs-utils
+    state: present
+  when: inventory_hostname in groups['kube_cluster'] or inventory_hostname in groups['bastion']
+
+- name: Add entry to /etc/exports in bastion
+  lineinfile:
+    state: present
+    path: "/etc/exports"
+    line: "{{ nfs_disk.path }} *(rw,sync,no_subtree_check,no_root_squash)"
+  when: inventory_hostname in groups['bastion']
+
+- name: Reboot bastion
+  reboot:
+  when: inventory_hostname in groups['bastion']
+
+- name: Enable nfs-server service
+  systemd:
+    name: nfs-server
+    enabled: yes
+    state: started
+  when: inventory_hostname in groups['bastion']
+
+- name: Add nfs to /etc/fstab in kube_cluster
+  ansible.posix.mount:
+    path: "{{ nfs_disk.path }}"
+    src: "{{ bastion.internal_ip }}:{{ nfs_disk.path }}"
+    fstype: nfs
+    state: present
+    opts: rw
+  when: inventory_hostname in groups['kube_cluster']
+
+- name: Reboot kube_cluster
+  reboot:
+  when: inventory_hostname in groups['kube_cluster']
