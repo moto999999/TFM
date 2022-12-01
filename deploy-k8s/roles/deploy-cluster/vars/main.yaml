@@ -1,5 +1,5 @@
 ---
 # loadbalancer info
 lb: 
-  lb_dns: replace
+  lb_dns: ip_lb
   lb_port: 6443

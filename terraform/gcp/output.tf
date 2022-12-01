@@ -1,5 +1,9 @@
 output "bastion_public_ip" {
-  value = format("%s: %s", google_compute_instance.instance-bastion.name, google_compute_instance.instance-bastion.network_interface.0.access_config[0].nat_ip)
+  value = format("%s_public_ip: %s", google_compute_instance.instance-bastion.name, google_compute_instance.instance-bastion.network_interface.0.access_config[0].nat_ip)
+}
+
+output "bastion_private_ip" {
+  value = format("%s_private_ip: %s", google_compute_instance.instance-bastion.name, google_compute_instance.instance-bastion.network_interface.0.network_ip)
 }
 
 ######### control plane #########
