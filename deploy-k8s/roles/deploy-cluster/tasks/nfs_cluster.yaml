@@ -1,0 +1,16 @@
+- name: Add nfs-subdir-external-provisioner repo
+  shell: "{{ helm.path }} repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/"
+  when: inventory_hostname in groups['bastion']
+
+- name: Change k8s namespace
+  shell: kubectl create ns nfs-provisioner
+  when: inventory_hostname in groups['bastion']
+
+- name: Install nfs-subdir-external-provisioner
+  shell: "{{ helm.path }} install nfs-subdir-external-provisioner nfs-subdir-external-provisioner/nfs-subdir-external-provisioner --set nfs.server={{ bastion.internal_ip }} --set nfs.path={{ nfs_disk.path }} --set storageClass.name=nfs -n nfs-provisioner"
+  when: inventory_hostname in groups['bastion']
+
+- name: Set nfs storageclass as default
+  shell: > 
+    kubectl patch storageclass nfs -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+  when: inventory_hostname in groups['bastion']

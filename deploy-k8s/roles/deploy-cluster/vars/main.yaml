@@ -10,3 +10,6 @@ nfs_disk:
 
 bastion:
   internal_ip: ip_bastion_internal
+
+helm:
+  path: /var/lib/snapd/snap/bin/helm

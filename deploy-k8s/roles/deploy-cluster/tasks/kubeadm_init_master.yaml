@@ -29,7 +29,7 @@
   when: inventory_hostname in groups['control_plane_1']
 
 - name: Add the Calico helm repo
-  shell: /var/lib/snapd/snap/bin/helm repo add projectcalico https://projectcalico.docs.tigera.io/charts
+  shell: "{{ helm.path }} repo add projectcalico https://projectcalico.docs.tigera.io/charts"
   when: inventory_hostname in groups['control_plane_1']
 
 - name: Create calico-system namespace
@@ -37,7 +37,7 @@
   when: inventory_hostname in groups['control_plane_1']
 
 - name: Install calico (cni) with helm
-  shell: /var/lib/snapd/snap/bin/helm install calico projectcalico/tigera-operator --version v3.24.2 --namespace calico-system
+  shell: "{{ helm.path }} install calico projectcalico/tigera-operator --version v3.24.2 --namespace calico-system"
   when: inventory_hostname in groups['control_plane_1']
 
 - name: wait for all nodes to be ready
