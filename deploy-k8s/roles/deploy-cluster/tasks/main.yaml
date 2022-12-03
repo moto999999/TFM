@@ -6,4 +6,5 @@
 - include_tasks: kubeadm_init_master.yaml
 - include_tasks: kubeadm_join_masters.yaml
 - include_tasks: kubeadm_join_computes.yaml
+- include_tasks: copy_k8s_kubeconfig.yaml
 - include_tasks: nfs_storage.yaml

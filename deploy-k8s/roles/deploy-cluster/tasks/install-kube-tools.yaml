@@ -6,7 +6,15 @@
     baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
     gpgkey: https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
     gpgcheck: yes
-  when: inventory_hostname in groups['kube_cluster']
+  when: inventory_hostname in groups['kube_cluster'] or inventory_hostname in groups['bastion']
+
+# Install kubectl on bastion
+- name: install kubectl
+  yum:
+    name:
+      - kubectl
+    state: present
+  when: inventory_hostname in groups['bastion']
 
 # Install kubelet on all K8S cluster nodes
 - name: install kubelet and kubeadm
