@@ -8,6 +8,9 @@ nfs_disk:
   partition: /dev/sdb
   path: /mnt/disks/pv-disk
 
+nfs_sc:
+  name: nfs
+
 bastion:
   internal_ip: ip_bastion_internal
 
