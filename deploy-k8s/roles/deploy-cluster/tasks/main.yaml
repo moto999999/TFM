@@ -9,3 +9,4 @@
 - include_tasks: copy_k8s_kubeconfig.yaml
 - include_tasks: nfs_storage.yaml
 - include_tasks: nfs_cluster.yaml
+- include_tasks: install_ingress.yaml

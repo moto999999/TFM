@@ -1,0 +1,27 @@
+- name: Add ingress-nginx repo
+  shell: "{{ helm.path }} repo add ingress-nginx https://kubernetes.github.io/ingress-nginx"
+  when: inventory_hostname in groups['bastion']
+
+- name: Copy ingress routes to bastion
+  template:
+    src: configuration_files/ingress_values.yaml
+    dest: "{{ ansible_env.HOME }}/ingress_values.yaml"
+  when: inventory_hostname in groups['bastion']
+
+- name: Install ingress-nginx
+  shell: >
+    {{ helm.path }} install ingress-nginx ingress-nginx/ingress-nginx \
+    -n ingress-nginx --create-namespace \
+    --values {{ ansible_env.HOME }}/ingress_values.yaml
+  when: inventory_hostname in groups['bastion']
+
+- name: Wait for deployment
+  shell: >
+    kubectl wait --namespace ingress-nginx \
+    --for=condition=ready pod \
+    --selector=app.kubernetes.io/component=controller
+  when: inventory_hostname in groups['bastion']
+
+- name: Apply ingress rule
+  shell: kubectl apply -f {{ ansible_env.HOME }}/ingress_routes.yaml
+  when: inventory_hostname in groups['bastion']

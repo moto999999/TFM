@@ -1,0 +1,38 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-monitoring
+  namespace: monitoring
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: prometheus.k8s-tfm.tk
+      http:
+        paths:
+          - pathType: Prefix
+            backend:
+              service:
+                name: prometheus-server
+                port:
+                  number: 80
+            path: /
+    - host: prometheus-alertmanager.k8s-tfm.tk
+      http:
+        paths:
+          - pathType: Prefix
+            backend:
+              service:
+                name: prometheus-alertmanager
+                port:
+                  number: 9093
+            path: /
+    - host: grafana.k8s-tfm.tk
+      http:
+        paths:
+          - pathType: Prefix
+            backend:
+              service:
+                name: grafana
+                port:
+                  number: 80
+            path: /
