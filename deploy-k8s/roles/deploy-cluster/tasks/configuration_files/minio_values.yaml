@@ -1,0 +1,25 @@
+mode: standalone
+
+auth:
+  rootUser: admin
+  rootPassword: {{ minio.password.root }}
+
+replicas: 1
+
+persistence:
+  size: 100Gi
+
+provisioning:
+  resources:
+    requests:
+      memory: 1Gi
+  users:
+    - accessKey: console
+      secretKey: {{ minio.password.console }}
+
+defaultBuckets: velero
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/path: "/minio/v2/metrics/cluster"
+  prometheus.io/port: "9000"

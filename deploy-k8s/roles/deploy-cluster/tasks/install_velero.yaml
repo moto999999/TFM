@@ -1,0 +1,52 @@
+- name: Add minio repo
+  shell: "{{ helm.path }} repo add minio https://charts.bitnami.com/bitnami"
+  when: inventory_hostname in groups['bastion']
+
+- name: Copy minio install values to bastion
+  template:
+    src: configuration_files/minio_values.yaml
+    dest: "{{ ansible_env.HOME }}/minio_values.yaml"
+  when: inventory_hostname in groups['bastion']
+
+- name: Install minio
+  shell: >
+   {{ helm.path }} install minio minio/minio \
+   --values {{ ansible_env.HOME }}/minio_values.yaml \
+   -n minio --create-namespace
+  when: inventory_hostname in groups['bastion']
+
+- name: Wait for deployment
+  shell: >
+    kubectl -n minio rollout status deployment minio
+  when: inventory_hostname in groups['bastion']
+
+- name: Download and install velero
+  shell: > 
+    yum install -y wget && \
+    wget https://github.com/vmware-tanzu/velero/releases/download/v1.10.0/velero-v1.10.0-linux-amd64.tar.gz -P {{ ansible_env.HOME }} && \
+    tar -xvf {{ ansible_env.HOME }}/velero-v1.10.0-linux-amd64.tar.gz -C {{ ansible_env.HOME }} && \
+    mv {{ ansible_env.HOME }}/velero-v1.10.0-linux-amd64/velero /usr/local/bin
+  when: inventory_hostname in groups['bastion']
+
+- name: Copy velero credentials to bastion
+  template:
+    src: configuration_files/credentials-velero
+    dest: "{{ ansible_env.HOME }}/credentials-velero"
+  when: inventory_hostname in groups['bastion']
+
+- name: Install velero
+  shell: >
+   /usr/local/bin/velero install \
+    --provider aws \
+    --plugins velero/velero-plugin-for-aws:v1.5.3 \
+    --bucket velero \
+    --secret-file {{ ansible_env.HOME }}/credentials-velero \
+    --use-volume-snapshots=false \
+    --backup-location-config region=minio,s3ForcePathStyle="true",s3Url=http://minio.minio.svc.cluster.local:9000 \
+    --use-node-agent
+  when: inventory_hostname in groups['bastion']
+
+- name: Wait for deployment
+  shell: >
+    kubectl -n velero rollout status deployment velero
+  when: inventory_hostname in groups['bastion']

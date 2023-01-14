@@ -11,6 +11,11 @@ nfs_disk:
 nfs_sc:
   name: nfs
 
+minio:
+  password:
+    root: admintemporal
+    console: admintemporal
+
 bastion:
   internal_ip: ip_bastion_internal
 
