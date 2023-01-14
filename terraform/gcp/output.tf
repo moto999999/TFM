@@ -61,5 +61,5 @@ output "worker_ips" {
 }
 
 output "lb_ip" {
-  value = format("%s: %s", "lb_ip", google_compute_global_address.k8s_lb_control_plane.address)
+  value = format("%s: %s", "lb_ip", google_compute_global_address.k8s_lb.address)
 }

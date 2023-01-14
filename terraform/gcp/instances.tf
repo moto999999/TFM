@@ -108,6 +108,11 @@ resource "google_compute_region_instance_group_manager" "mig_worker" {
   base_instance_name = "worker"
   target_size        = var.number_workers
 
+  named_port {
+    name = "nginx"
+    port = 31215
+  }
+
   wait_for_instances = true
 }
 

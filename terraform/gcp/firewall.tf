@@ -82,3 +82,17 @@ resource "google_compute_firewall" "firewall_rule_nfs_server" {
   source_tags = [var.control_plane_tag, var.worker_tag, var.bastion_tag]
   target_tags = [var.control_plane_tag, var.worker_tag, var.bastion_tag]
 }
+
+resource "google_compute_firewall" "firewall_rule_nginx" {
+  name        = "ingress-nginx"
+  network     = google_compute_network.k8s_network.id
+  description = "Creates firewall rule for nfs server"
+
+  allow {
+    protocol = "tcp"
+    ports = [ "31215" ]
+  }
+
+  source_ranges = ["0.0.0.0/0"]
+  target_tags = [var.worker_tag]
+}
