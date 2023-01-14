@@ -20,7 +20,7 @@
 - name: install kubelet and kubeadm
   yum:
     name:
-      - "{{ item }}"
+      - "{{ item }}-1.25.5"
     state: present
   with_items: 
     - kubelet
