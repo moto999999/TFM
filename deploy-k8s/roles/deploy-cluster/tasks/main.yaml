@@ -10,3 +10,4 @@
 - include_tasks: nfs_storage.yaml
 - include_tasks: nfs_cluster.yaml
 - include_tasks: install_ingress.yaml
+- include_tasks: install_monitoring.yaml

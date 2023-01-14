@@ -1,0 +1,43 @@
+- name: Add prometheus-community repo
+  shell: "{{ helm.path }} repo add prometheus-community https://prometheus-community.github.io/helm-charts"
+  when: inventory_hostname in groups['bastion']
+
+- name: Copy prometheus install values to bastion
+  template:
+    src: configuration_files/prometheus_values.yaml
+    dest: "{{ ansible_env.HOME }}/prometheus_values.yaml"
+  when: inventory_hostname in groups['bastion']
+
+- name: Install prometheus
+  shell: >
+   {{ helm.path }} install prometheus prometheus-community/prometheus \
+   --values {{ ansible_env.HOME }}/prometheus_values.yaml \
+   -n monitoring --create-namespace
+  when: inventory_hostname in groups['bastion']
+
+- name: Wait for deployment
+  shell: >
+    kubectl -n monitoring rollout status deployment prometheus-server
+  when: inventory_hostname in groups['bastion']
+
+- name: Copy grafana install values to bastion
+  template:
+    src: configuration_files/grafana_values.yaml
+    dest: "{{ ansible_env.HOME }}/grafana_values.yaml"
+  when: inventory_hostname in groups['bastion']
+
+- name: Add grafana repo
+  shell: "{{ helm.path }} repo add grafana https://grafana.github.io/helm-charts"
+  when: inventory_hostname in groups['bastion']
+
+- name: Install grafana
+  shell: >
+   {{ helm.path }} install grafana grafana/grafana \
+   --values {{ ansible_env.HOME }}/grafana_values.yaml \
+   -n monitoring
+  when: inventory_hostname in groups['bastion']
+
+- name: Wait for deployment
+  shell: >
+    kubectl -n monitoring rollout status deployment grafana
+  when: inventory_hostname in groups['bastion']
