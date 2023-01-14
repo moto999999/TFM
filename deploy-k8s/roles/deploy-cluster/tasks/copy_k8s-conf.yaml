@@ -25,7 +25,7 @@
 
 - name: Copy kubelet config
   template:
-    src: kubelet_config.yaml
+    src: configuration_files/kubelet_config.yaml
     dest: /root/kubelet_config.yaml
     mode: 0644
   when: inventory_hostname in groups['control_plane_1']
