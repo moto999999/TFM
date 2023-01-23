@@ -1,6 +1,6 @@
 variable "project" {
   type    = string
-  default = "tfm-uc3m-365809"
+  default = "tfm-uc3m-375623"
 }
 
 variable "region" {

@@ -136,5 +136,4 @@ resource "google_compute_url_map" "lb_nginx" {
     }
   }
 
-  project = "tfm-uc3m-365809"
 }
