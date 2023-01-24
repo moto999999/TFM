@@ -5,12 +5,12 @@ variable "project" {
 
 variable "region" {
   type    = string
-  default = "europe-west1"
+  default = "us-west1"
 }
 
 variable "zone" {
   type    = string
-  default = "europe-west1-b"
+  default = "us-west1-b"
 }
 
 variable "credentials" {
