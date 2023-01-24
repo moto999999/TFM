@@ -310,7 +310,7 @@ extraContainerVolumes: []
 persistence:
   type: pvc
   enabled: true
-  storageClassName: "{{ nfs_sc.name }}"
+  storageClassName: {}
   accessModes:
     - ReadWriteOnce
   size: 10Gi

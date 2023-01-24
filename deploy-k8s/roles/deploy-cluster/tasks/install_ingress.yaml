@@ -21,7 +21,3 @@
     --for=condition=ready pod \
     --selector=app.kubernetes.io/component=controller
   when: inventory_hostname in groups['bastion']
-
-- name: Apply ingress rule
-  shell: kubectl apply -f {{ ansible_env.HOME }}/ingress_routes.yaml
-  when: inventory_hostname in groups['bastion']

@@ -3,7 +3,7 @@
     path: "{{ nfs_disk.path }}"
     state: directory
     mode: a+w
-  when: inventory_hostname in groups['kube_cluster'] or inventory_hostname in groups['bastion']
+  when: inventory_hostname in groups['worker'] or inventory_hostname in groups['bastion']
 
 - name: Create ext4 filesystem on {{ nfs_disk.partition }}
   shell: sudo mkfs.ext4 -m 0 -E lazy_itable_init=0,lazy_journal_init=0,discard {{ nfs_disk.partition }}
@@ -29,7 +29,7 @@
     name:
       - nfs-utils
     state: present
-  when: inventory_hostname in groups['kube_cluster'] or inventory_hostname in groups['bastion']
+  when: inventory_hostname in groups['worker'] or inventory_hostname in groups['bastion']
 
 - name: Add entry to /etc/exports in bastion
   lineinfile:
@@ -49,15 +49,15 @@
     state: started
   when: inventory_hostname in groups['bastion']
 
-- name: Add nfs to /etc/fstab in kube_cluster
+- name: Add nfs to /etc/fstab in workers
   ansible.posix.mount:
     path: "{{ nfs_disk.path }}"
     src: "{{ bastion.internal_ip }}:{{ nfs_disk.path }}"
     fstype: nfs
     state: present
     opts: rw
-  when: inventory_hostname in groups['kube_cluster']
+  when: inventory_hostname in groups['worker']
 
-- name: Reboot kube_cluster
+- name: Reboot workers
   reboot:
-  when: inventory_hostname in groups['kube_cluster']
+  when: inventory_hostname in groups['worker']
