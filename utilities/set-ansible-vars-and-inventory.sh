@@ -1,4 +1,5 @@
 git checkout origin/master ../deploy-k8s/inventory ../deploy-k8s/roles/deploy-cluster/vars/main.yaml
+rm -rf ~/.ssh/known_hosts
 
 ip_bastion=`cd ../terraform/gcp && terraform output | tr -d '"' | grep "bastion_public_ip:" | sed 's/^.*: //'`
 ip_bastion_internal=`cd ../terraform/gcp && terraform output | tr -d '"' | grep "bastion_private_ip:" | sed 's/^.*: //'`
