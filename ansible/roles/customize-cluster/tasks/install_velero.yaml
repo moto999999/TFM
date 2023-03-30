@@ -1,5 +1,7 @@
 - name: Add minio repo
-  shell: "{{ helm.path }} repo add minio https://charts.bitnami.com/bitnami"
+  shell: "helm repo add minio https://charts.bitnami.com/bitnami"
+  environment:
+    PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
   when: inventory_hostname in groups['bastion']
 
 - name: Copy minio install values to bastion
@@ -10,9 +12,11 @@
 
 - name: Install minio
   shell: >
-   {{ helm.path }} install minio minio/minio \
+   helm install minio minio/minio \
    --values {{ ansible_env.HOME }}/minio_values.yaml \
    -n minio --create-namespace
+  environment:
+    PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
   when: inventory_hostname in groups['bastion']
 
 - name: Wait for deployment

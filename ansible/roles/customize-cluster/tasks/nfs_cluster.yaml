@@ -1,14 +1,18 @@
 - name: Add nfs-subdir-external-provisioner repo
-  shell: "{{ helm.path }} repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/"
+  shell: "helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/"
+  environment:
+    PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
   when: inventory_hostname in groups['bastion']
 
 - name: Install nfs-subdir-external-provisioner
   shell: > 
-    {{ helm.path }} install nfs-subdir-external-provisioner nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
+    helm install nfs-subdir-external-provisioner nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
     --set nfs.server={{ bastion.internal_ip }} \
     --set nfs.path={{ nfs_disk.path }} \
     --set storageClass.name={{ nfs_sc.name }} \
     -n nfs-provisioner --create-namespace
+  environment:
+    PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
   when: inventory_hostname in groups['bastion']
 
 - name: Set nfs storageclass as default

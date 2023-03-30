@@ -12,7 +12,7 @@
 - name: install kubectl
   yum:
     name:
-      - kubectl
+      - kubectl-1.24.10
     state: present
   when: inventory_hostname in groups['bastion']
 
@@ -20,7 +20,7 @@
 - name: install kubelet and kubeadm
   yum:
     name:
-      - "{{ item }}-1.25.5"
+      - "{{ item }}-1.24.10"
     state: present
   with_items: 
     - kubelet
@@ -35,32 +35,11 @@
     state: present
   when: inventory_hostname in groups['kube_cluster'] or inventory_hostname in groups['bastion']
 
-# Install snapd on all K8S cluster nodes and bastion
-- name: install snapd
-  yum:
-    name:
-      - snapd
-    state: present
-  when: inventory_hostname in groups['kube_cluster'] or inventory_hostname in groups['bastion']
-
-# Start snapd service on all K8S cluster nodes
-- name: start snapd
-  service:
-    name: snapd
-    enabled: yes
-    state: started
-  when: inventory_hostname in groups['kube_cluster'] or inventory_hostname in groups['bastion']
-
-- name: Create a symbolic link /snap
-  file:
-    src: /var/lib/snapd/snap
-    dest: /snap
-    state: link
-  when: inventory_hostname in groups['kube_cluster'] or inventory_hostname in groups['bastion']
-
-# Install helm on all K8S cluster nodes and bastion
-- name: install helm
-  shell: snap install helm --classic
+# Install helm
+- name: Install helm
+  shell: curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+  environment:
+    PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
   when: inventory_hostname in groups['kube_cluster'] or inventory_hostname in groups['bastion']
 
 # Start kubelet service on all K8S cluster nodes

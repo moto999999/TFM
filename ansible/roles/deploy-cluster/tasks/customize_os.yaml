@@ -19,7 +19,7 @@
 
 - name: copy kernel modules config file
   template:
-    src: kernel-modules.conf
+    src: configuration_files/kernel-modules.conf
     dest: '/etc/modules-load.d/k8s.conf'
     mode: 0644
   when: inventory_hostname in groups['kube_cluster']
@@ -80,11 +80,11 @@
   when: inventory_hostname in groups['kube_cluster']
 
 # Update all packages
-- name: upgrade all packages
-  yum:
-    name: '*'
-    state: latest
-  when: inventory_hostname in groups['kube_cluster']
+#- name: upgrade all packages
+#  yum:
+#    name: '*'
+#    state: latest
+#  when: inventory_hostname in groups['kube_cluster']
 
 # Restart all VMs
 - name: Rebooting VMs

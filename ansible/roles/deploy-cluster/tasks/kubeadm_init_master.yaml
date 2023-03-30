@@ -17,7 +17,7 @@
   when: inventory_hostname in groups['control_plane_1']
   
 - name: copy admin conf
-  shell: cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  shell: cp /etc/kubernetes/admin.conf $HOME/.kube/config
   when: inventory_hostname in groups['control_plane_1']
 
 - name: change permissions
@@ -29,7 +29,9 @@
   when: inventory_hostname in groups['control_plane_1']
 
 - name: Add the Calico helm repo
-  shell: "{{ helm.path }} repo add projectcalico https://projectcalico.docs.tigera.io/charts"
+  shell: "helm repo add projectcalico https://projectcalico.docs.tigera.io/charts"
+  environment:
+    PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
   when: inventory_hostname in groups['control_plane_1']
 
 - name: Create calico-system namespace
@@ -37,7 +39,9 @@
   when: inventory_hostname in groups['control_plane_1']
 
 - name: Install calico (cni) with helm
-  shell: "{{ helm.path }} install calico projectcalico/tigera-operator --version v3.24.2 --namespace calico-system"
+  shell: "helm install calico projectcalico/tigera-operator --version v3.25.0 --namespace calico-system"
+  environment:
+    PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
   when: inventory_hostname in groups['control_plane_1']
 
 - name: wait for all nodes to be ready

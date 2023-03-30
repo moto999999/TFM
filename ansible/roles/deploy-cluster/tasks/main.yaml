@@ -3,12 +3,8 @@
 - include_tasks: customize_os.yaml
 - include_tasks: install-kube-tools.yaml
 - include_tasks: copy_k8s-conf.yaml
+- include_tasks: create_vm_snapshot.yaml
 - include_tasks: kubeadm_init_master.yaml
 - include_tasks: kubeadm_join_masters.yaml
 - include_tasks: kubeadm_join_computes.yaml
 - include_tasks: copy_k8s_kubeconfig.yaml
-- include_tasks: nfs_storage.yaml
-- include_tasks: nfs_cluster.yaml
-- include_tasks: install_ingress.yaml
-- include_tasks: install_monitoring.yaml
-- include_tasks: install_velero.yaml

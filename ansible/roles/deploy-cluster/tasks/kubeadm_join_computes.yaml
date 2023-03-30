@@ -17,9 +17,14 @@
     msg: "{{kubeadmjoin.stdout_lines}}"
   when: inventory_hostname in groups['worker']
 
+- name: Wait 20 seconds
+  pause:
+    seconds: 20
+
 - name: wait for all nodes to be ready
   shell: kubectl wait --for=condition=Ready nodes --all
   register: nodes_ready
+  ignore_errors: true
   when: inventory_hostname in groups['control_plane_2']
 
 - name: get worker node status

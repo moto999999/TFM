@@ -1,0 +1,8 @@
+- name: Create control-plane-ready
+  shell: >
+    gcloud compute images create node-ready \
+      --source-disk=$(curl "http://metadata.google.internal/computeMetadata/v1/instance/name" -H "Metadata-Flavor: Google" -s) \
+      --source-disk-zone=$(curl "http://metadata.google.internal/computeMetadata/v1/instance/zone" -H "Metadata-Flavor: Google" -s | sed 's:.*/::') \
+      --force
+  ignore_errors: true
+  when: inventory_hostname in groups['control_plane_1']

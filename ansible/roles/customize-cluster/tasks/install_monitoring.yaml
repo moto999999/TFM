@@ -1,5 +1,7 @@
 - name: Add prometheus-community repo
-  shell: "{{ helm.path }} repo add prometheus-community https://prometheus-community.github.io/helm-charts"
+  shell: "helm repo add prometheus-community https://prometheus-community.github.io/helm-charts"
+  environment:
+    PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
   when: inventory_hostname in groups['bastion']
 
 - name: Copy prometheus install values to bastion
@@ -10,9 +12,11 @@
 
 - name: Install prometheus
   shell: >
-   {{ helm.path }} install prometheus prometheus-community/prometheus \
+   helm install prometheus prometheus-community/prometheus \
    --values {{ ansible_env.HOME }}/prometheus_values.yaml \
    -n monitoring --create-namespace
+  environment:
+    PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
   when: inventory_hostname in groups['bastion']
 
 - name: Wait for deployment
@@ -27,14 +31,18 @@
   when: inventory_hostname in groups['bastion']
 
 - name: Add grafana repo
-  shell: "{{ helm.path }} repo add grafana https://grafana.github.io/helm-charts"
+  shell: "helm repo add grafana https://grafana.github.io/helm-charts"
+  environment:
+    PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
   when: inventory_hostname in groups['bastion']
 
 - name: Install grafana
   shell: >
-   {{ helm.path }} install grafana grafana/grafana \
+   helm install grafana grafana/grafana \
    --values {{ ansible_env.HOME }}/grafana_values.yaml \
    -n monitoring
+  environment:
+    PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
   when: inventory_hostname in groups['bastion']
 
 - name: Wait for deployment
