@@ -4,11 +4,19 @@ variable "network_name" {
 }
 
 variable "subnetwork_name" {
-  type    = string
-  default = "nodes"
+  type = map(any)
+  default = {
+    bastion       = "bastion"
+    control_plane = "control-plane"
+    worker        = "worker"
+  }
 }
 
 variable "ip_cidr_range" {
-  type    = string
-  default = "10.0.0.0/24"
+  type = map(any)
+  default = {
+    bastion       = "10.0.0.0/24"
+    control_plane = "10.0.1.0/24"
+    worker        = "10.0.2.0/24"
+  }
 }

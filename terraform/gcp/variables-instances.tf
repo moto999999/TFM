@@ -1,6 +1,10 @@
 variable "machine_type" {
-  type    = string
-  default = "e2-standard-2"
+  type = map(any)
+  default = {
+    control_plane = "e2-standard-2"
+    worker        = "e2-standard-2"
+    bastion       = "e2-medium"
+  }
 }
 
 variable "disk_type" {
@@ -44,4 +48,14 @@ variable "number_control_planes" {
 variable "number_workers" {
   type = number
   default = 2
+}
+
+variable "certificate" {
+  type  = string
+  default = "../../certificates/server.crt"
+}
+
+variable "certificate_private_key" {
+  type  = string
+  default = "../../certificates/server.key"
 }

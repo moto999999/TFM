@@ -1,6 +1,6 @@
 resource "google_compute_instance" "instance-bastion" {
   name         = "bastion"
-  machine_type = var.machine_type
+  machine_type = var.machine_type["bastion"]
   zone         = var.zone
 
   tags = [var.bastion_tag]
@@ -16,7 +16,7 @@ resource "google_compute_instance" "instance-bastion" {
 
   network_interface {
     network    = google_compute_network.k8s_network.id
-    subnetwork = google_compute_subnetwork.nodes_subnet.id
+    subnetwork = google_compute_subnetwork.bastion_subnet.id
     access_config {
       // Ephemeral public IP
     }
@@ -33,7 +33,7 @@ resource "google_compute_instance" "instance-bastion" {
 # instance template for control plane
 resource "google_compute_instance_template" "control_plane" {
   name         = "control-plane-template"
-  machine_type = var.machine_type
+  machine_type = var.machine_type["control_plane"]
 
   tags = [var.control_plane_tag]
 
@@ -48,10 +48,14 @@ resource "google_compute_instance_template" "control_plane" {
   // No public IP
   network_interface {
     network    = google_compute_network.k8s_network.id
-    subnetwork = google_compute_subnetwork.nodes_subnet.id
+    subnetwork = google_compute_subnetwork.control_plane_subnet.id
   }
 
-  metadata_startup_script = "sudo dnf install ansible-core nano -y"
+  metadata_startup_script = "sudo dnf install nano -y"
+  
+  service_account {
+    scopes = ["storage-full", "cloud-platform", "compute-rw", "logging-write", "monitoring", "service-control", "service-management"]
+  }
 }
 
 # MIG for control planes
@@ -76,7 +80,7 @@ resource "google_compute_region_instance_group_manager" "mig_control_plane" {
 # instance template for worker
 resource "google_compute_instance_template" "worker" {
   name         = "worker-template"
-  machine_type = var.machine_type
+  machine_type = var.machine_type["worker"]
 
   tags = [var.worker_tag]
 
@@ -91,10 +95,14 @@ resource "google_compute_instance_template" "worker" {
   // No public IP
   network_interface {
     network    = google_compute_network.k8s_network.id
-    subnetwork = google_compute_subnetwork.nodes_subnet.id
+    subnetwork = google_compute_subnetwork.worker_subnet.id
   }
 
-  metadata_startup_script = "sudo dnf install ansible-core nano -y"
+  metadata_startup_script = "sudo dnf install nano -y"
+
+  service_account {
+    scopes = ["storage-full", "cloud-platform", "compute-rw", "logging-write", "monitoring", "service-control", "service-management"]
+  }
 }
 
 # MIG for workers

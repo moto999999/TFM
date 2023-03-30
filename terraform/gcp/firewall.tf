@@ -39,10 +39,10 @@ resource "google_compute_firewall" "firewall_rule_api_server" {
   target_tags   = [var.control_plane_tag]
 }
 
-resource "google_compute_firewall" "firewall_rule_all_all_internal" {
-  name        = "allow-all-internal"
+resource "google_compute_firewall" "firewall_rule_allow_all_internal_control_plane" {
+  name        = "allow-all-internal-control-plane"
   network     = google_compute_network.k8s_network.id
-  description = "Creates firewall rule for Typha"
+  description = "Creates firewall rule for allowing all traffic between control plane nodes"
 
   allow {
     protocol = "tcp"
@@ -58,6 +58,81 @@ resource "google_compute_firewall" "firewall_rule_all_all_internal" {
 
   allow {
     protocol = "ipip"
+  }
+
+  source_tags = [var.control_plane_tag]
+  target_tags = [var.control_plane_tag]
+}
+
+resource "google_compute_firewall" "firewall_rule_allow_all_internal_worker" {
+  name        = "allow-all-internal-worker"
+  network     = google_compute_network.k8s_network.id
+  description = "Creates firewall rule for allowing all traffic between control plane nodes"
+
+  allow {
+    protocol = "tcp"
+  }
+
+  allow {
+    protocol = "udp"
+  }
+
+  allow {
+    protocol = "icmp"
+  }
+
+  allow {
+    protocol = "ipip"
+  }
+
+  source_tags = [var.worker_tag]
+  target_tags = [var.worker_tag]
+}
+
+resource "google_compute_firewall" "firewall_rule_allow_calico" {
+  name        = "allow-calico-internal"
+  network     = google_compute_network.k8s_network.id
+  description = "Creates firewall rule for allowing all traffic between control plane nodes"
+
+    allow {
+    protocol = "tcp"
+    ports    = ["179", "2379", "5473"] # BGP, etcd datastore and Calico networking with Typha enabled
+  }
+
+  allow {
+    protocol = "icmp"
+  }
+
+  allow {
+    protocol = "ipip" # Calico networking with IP-in-IP enabled (default)
+  }
+
+  source_tags = [var.control_plane_tag, var.worker_tag]
+  target_tags = [var.control_plane_tag, var.worker_tag]
+}
+
+resource "google_compute_firewall" "firewall_rule_allow_kubelet_api" {
+  name        = "allow-kubelet-api"
+  network     = google_compute_network.k8s_network.id
+  description = "Creates firewall rule for allowing kubelet api traffic"
+
+    allow {
+    protocol = "tcp"
+    ports    = ["10250"] # Kubelet API
+  }
+
+  source_tags = [var.control_plane_tag, var.worker_tag]
+  target_tags = [var.control_plane_tag, var.worker_tag]
+}
+
+resource "google_compute_firewall" "firewall_rule_allow_nodeports" {
+  name        = "allow-nodeport-services"
+  network     = google_compute_network.k8s_network.id
+  description = "Creates firewall rule for allowing nodeport services"
+
+    allow {
+    protocol = "tcp"
+    ports    = ["30000-32767"] # Kubelet API
   }
 
   source_tags = [var.control_plane_tag, var.worker_tag]
@@ -79,8 +154,8 @@ resource "google_compute_firewall" "firewall_rule_nfs_server" {
     ports = [ "111", "2049" ]
   }
 
-  source_tags = [var.control_plane_tag, var.worker_tag, var.bastion_tag]
-  target_tags = [var.control_plane_tag, var.worker_tag, var.bastion_tag]
+  source_tags = [var.worker_tag, var.bastion_tag]
+  target_tags = [var.worker_tag, var.bastion_tag]
 }
 
 resource "google_compute_firewall" "firewall_rule_nginx" {

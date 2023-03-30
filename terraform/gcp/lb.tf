@@ -51,8 +51,8 @@ resource "google_compute_health_check" "api_server" {
 # SSL certificate
 resource "google_compute_ssl_certificate" "k8s_apps" {
   name        = "k8s-apps-certificate"
-  private_key = file("../../certificates/server.key")
-  certificate = file("../../certificates/server.crt")
+  private_key = file(var.certificate_private_key)
+  certificate = file(var.certificate)
 }
 
 # forwarding rule
