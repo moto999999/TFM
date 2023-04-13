@@ -12,4 +12,7 @@
 ansible-galaxy collection install ansible.posix
 
 # Deploy cluster
-(cd ../deploy-k8s/ && ansible-playbook deploy-cluster.yaml -i inventory)
+(cd ../ansible/ && ansible-playbook deploy-cluster.yaml -i inventory)
+
+# Customize cluster
+(cd ../ansible/ && ansible-playbook customize-cluster.yaml -i inventory)

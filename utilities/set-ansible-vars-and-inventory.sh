@@ -1,4 +1,4 @@
-git checkout origin/master ../deploy-k8s/inventory ../deploy-k8s/roles/deploy-cluster/vars/main.yaml
+git checkout origin/master ../ansible/inventory ../ansible/roles/deploy-cluster/vars/main.yaml
 rm -rf ~/.ssh/known_hosts
 
 ip_bastion=`cd ../terraform/gcp && terraform output | tr -d '"' | grep "bastion_public_ip:" | sed 's/^.*: //'`
@@ -7,21 +7,21 @@ ip_lb=`cd ../terraform/gcp && terraform output | tr -d '"' | grep "lb_ip:" | sed
 ips_control_plane=`cd ../terraform/gcp && terraform output | tr -d '"' | grep "control-plane-.*:" | sed 's/^.*: //' | tr -d ','`
 ips_worker=`cd ../terraform/gcp && terraform output | tr -d '"' | grep "worker-.*:" | sed 's/^.*: //' | tr -d ','`
 
-sed -i -e s/ip_lb/$ip_lb/g ../deploy-k8s/roles/deploy-cluster/vars/main.yaml
-sed -i -e s/ip_bastion_internal/$ip_bastion_internal/g ../deploy-k8s/roles/deploy-cluster/vars/main.yaml
+sed -i -e s/ip_lb/$ip_lb/g ../ansible/roles/deploy-cluster/vars/main.yaml
+sed -i -e s/ip_bastion_internal/$ip_bastion_internal/g ../ansible/roles/deploy-cluster/vars/main.yaml
 
-sed -i -e s/ip_bastion/$ip_bastion/g ../deploy-k8s/inventory
+sed -i -e s/ip_bastion/$ip_bastion/g ../ansible/inventory
 
 i=1
 for ip_control_plane in $ips_control_plane
 do
-    sed -i -e s/ip_master_$i/$ip_control_plane/g ../deploy-k8s/inventory
+    sed -i -e s/ip_master_$i/$ip_control_plane/g ../ansible/inventory
     i=$(($i+1))
 done
 
 i=1
 for ip_worker in $ips_worker
 do
-    sed -i -e s/ip_worker_$i/$ip_worker/g ../deploy-k8s/inventory
+    sed -i -e s/ip_worker_$i/$ip_worker/g ../ansible/inventory
     i=$(($i+1))
 done
