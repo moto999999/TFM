@@ -10,9 +10,6 @@ persistence:
   size: 100Gi
 
 provisioning:
-  resources:
-    requests:
-      memory: 1Gi
   users:
     - accessKey: console
       secretKey: {{ minio.password.console }}
