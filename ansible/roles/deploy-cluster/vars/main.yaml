@@ -1,7 +1,7 @@
 ---
 # loadbalancer info
 lb: 
-  lb_dns: 34.149.8.234
+  lb_dns: ip_lb
   lb_port: 6443
 
 nfs_disk:
@@ -17,7 +17,7 @@ minio:
     console: admintemporal
 
 bastion:
-  internal_ip: 10.0.0.2
+  internal_ip: ip_bastion_internal
 
 helm:
   path: /var/lib/snapd/snap/bin/helm
