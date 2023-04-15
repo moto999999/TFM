@@ -5,28 +5,119 @@ terraform {
       version = "4.51.0"
     }
   }
+
   backend "gcs" {
-   bucket  = "69525944e1c29c3t-bucket-tfstate"
-   prefix  = "terraform/state"
- }
-}
-
-provider "google" {
-  project = var.project
-  region  = var.region
-  zone    = var.zone
-}
-
-resource "random_id" "bucket_prefix" {
-  byte_length = 8
-}
-
-resource "google_storage_bucket" "default" {
-  name          = "${random_id.bucket_prefix.hex}-bucket-tfstate"
-  force_destroy = true
-  location      = "EU"
-  storage_class = "STANDARD"
-  versioning {
-    enabled = true
+    bucket = "69525944e1c29c3t-bucket-tfstate"
+    prefix = "terraform/state"
   }
+}
+
+locals {
+  # Network
+  k8s_network = module.vpc.k8s_network
+  subnets = {
+    bastion       = module.vpc.bastion_subnet
+    control_plane = module.vpc.control_plane_subnet
+    worker        = module.vpc.worker_subnet
+  }
+  k8s_lb = module.lb.k8s_lb
+
+  # Instances
+  mig_control_plane = module.instances.mig_control_plane
+  mig_worker        = module.instances.mig_worker
+
+  # Disk
+  nfs_disk = module.disks.nfs_disk
+}
+
+# VPC module
+module "vpc" {
+  source = "./vpc"
+
+  # Network configuration
+  network_name    = var.network_name
+  subnetwork_name = var.subnetwork_name
+  ip_cidr_range   = var.ip_cidr_range
+
+  region = var.region
+}
+
+# Firewall module
+module "firewall" {
+  source = "./firewall"
+  tags   = var.instance_tags
+
+  # Network
+  k8s_network_id        = local.k8s_network.id
+  http_ingress_nodeport = var.http_ingress_nodeport
+}
+
+# Load balancer module
+module "lb" {
+  source = "./load-balancer"
+
+  # Certificates
+  certificate_private_key = var.certificate_private_key
+  certificate             = var.certificate
+
+  # Managed Instance Groups
+  mig_control_plane = local.mig_control_plane
+  mig_worker        = local.mig_worker
+
+  # Network
+  k8s_network           = local.k8s_network
+  http_ingress_nodeport = var.http_ingress_nodeport
+}
+
+# Instances module
+module "instances" {
+  source = "./instances"
+
+  # Machine configuration
+  machine_type     = var.machine_type
+  zone             = var.zone
+  instance_tags    = var.instance_tags
+  image            = var.image
+  ssh_user         = var.ssh_user
+  ssh_pub_key_file = var.ssh_pub_key_file
+
+  # Network configuration
+  network               = local.k8s_network
+  subnetworks           = local.subnets
+  http_ingress_nodeport = var.http_ingress_nodeport
+
+  # Disk configuration
+  disk_size_gb = var.disk_size_gb
+  disk_type    = var.disk_type
+  nfs_disk     = local.nfs_disk
+
+  # Kubernetes configuration
+  number_control_planes = var.number_control_planes
+  number_workers        = var.number_workers
+  region                = var.region
+}
+
+# Disk management module
+module "disks" {
+  source = "./disks"
+
+  # Disk configuration
+  disk_type    = var.disk_type
+  disk_size_gb = var.disk_size_gb
+
+  # Zone configuration
+  zone   = var.zone
+  region = var.region
+}
+
+# DNS module
+module "dns" {
+  source = "./dns"
+
+  # Load Balancer instance
+  k8s_lb = local.k8s_lb
+
+  # Zone configuration
+  zone   = var.zone
+  region = var.region
 }

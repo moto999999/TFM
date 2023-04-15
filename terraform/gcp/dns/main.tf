@@ -32,7 +32,7 @@ resource "google_dns_managed_zone" "k8s_tfm" {
 resource "google_dns_record_set" "prometheus" {
   managed_zone = google_dns_managed_zone.k8s_tfm.name
   name         = format("%s.%s", "prometheus", google_dns_managed_zone.k8s_tfm.dns_name)
-  rrdatas      = [google_compute_global_address.k8s_lb.address]
+  rrdatas      = [var.k8s_lb.address]
   ttl          = 300
   type         = "A"
 }
@@ -40,7 +40,7 @@ resource "google_dns_record_set" "prometheus" {
 resource "google_dns_record_set" "prometheus_alertmanager" {
   managed_zone = google_dns_managed_zone.k8s_tfm.name
   name         = format("%s.%s", "prometheus-alertmanager", google_dns_managed_zone.k8s_tfm.dns_name)
-  rrdatas      = [google_compute_global_address.k8s_lb.address]
+  rrdatas      = [var.k8s_lb.address]
   ttl          = 300
   type         = "A"
 }
@@ -48,7 +48,7 @@ resource "google_dns_record_set" "prometheus_alertmanager" {
 resource "google_dns_record_set" "grafana" {
   managed_zone = google_dns_managed_zone.k8s_tfm.name
   name         = format("%s.%s", "grafana", google_dns_managed_zone.k8s_tfm.dns_name)
-  rrdatas      = [google_compute_global_address.k8s_lb.address]
+  rrdatas      = [var.k8s_lb.address]
   ttl          = 300
   type         = "A"
 }

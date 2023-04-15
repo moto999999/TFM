@@ -3,7 +3,7 @@ resource "google_compute_instance" "instance-bastion" {
   machine_type = var.machine_type["bastion"]
   zone         = var.zone
 
-  tags = [var.bastion_tag]
+  tags = [var.instance_tags["bastion"]]
 
   // Rocky linux as image
   boot_disk {
@@ -15,15 +15,15 @@ resource "google_compute_instance" "instance-bastion" {
   }
 
   network_interface {
-    network    = google_compute_network.k8s_network.id
-    subnetwork = google_compute_subnetwork.bastion_subnet.id
+    network    = var.network.self_link
+    subnetwork = var.subnetworks["bastion"].self_link
     access_config {
       // Ephemeral public IP
     }
   }
 
   attached_disk {
-    source = google_compute_disk.nfs_disk.self_link
+    source = var.nfs_disk.self_link
     mode   = "READ_WRITE"
   }
 
@@ -35,7 +35,7 @@ resource "google_compute_instance_template" "control_plane" {
   name         = "control-plane-template"
   machine_type = var.machine_type["control_plane"]
 
-  tags = [var.control_plane_tag]
+  tags = [var.instance_tags["control_plane"]]
 
   // Rocky linux as image
   disk {
@@ -47,12 +47,12 @@ resource "google_compute_instance_template" "control_plane" {
 
   // No public IP
   network_interface {
-    network    = google_compute_network.k8s_network.id
-    subnetwork = google_compute_subnetwork.control_plane_subnet.id
+    network    = var.network.self_link
+    subnetwork = var.subnetworks["control_plane"].self_link
   }
 
   metadata_startup_script = "sudo dnf install nano -y"
-  
+
   service_account {
     scopes = ["storage-full", "cloud-platform", "compute-rw", "logging-write", "monitoring", "service-control", "service-management"]
   }
@@ -82,7 +82,7 @@ resource "google_compute_instance_template" "worker" {
   name         = "worker-template"
   machine_type = var.machine_type["worker"]
 
-  tags = [var.worker_tag]
+  tags = [var.instance_tags["worker"]]
 
   // Rocky linux as image
   disk {
@@ -94,8 +94,8 @@ resource "google_compute_instance_template" "worker" {
 
   // No public IP
   network_interface {
-    network    = google_compute_network.k8s_network.id
-    subnetwork = google_compute_subnetwork.worker_subnet.id
+    network    = var.network.self_link
+    subnetwork = var.subnetworks["worker"].self_link
   }
 
   metadata_startup_script = "sudo dnf install nano -y"
@@ -118,7 +118,7 @@ resource "google_compute_region_instance_group_manager" "mig_worker" {
 
   named_port {
     name = "nginx"
-    port = 31215
+    port = var.http_ingress_nodeport
   }
 
   wait_for_instances = true

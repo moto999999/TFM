@@ -29,7 +29,7 @@ resource "google_compute_backend_service" "k8s_lb_api_server" {
   timeout_sec           = 9
   health_checks         = [google_compute_health_check.api_server.id]
   backend {
-    group           = google_compute_region_instance_group_manager.mig_control_plane.instance_group
+    group           = var.mig_control_plane.instance_group
     balancing_mode  = "UTILIZATION"
     max_utilization = 1.0
     capacity_scaler = 1.0
@@ -37,10 +37,10 @@ resource "google_compute_backend_service" "k8s_lb_api_server" {
 }
 
 resource "google_compute_health_check" "api_server" {
-  name               = "tcp-proxy-health-check"
-  timeout_sec        = 3
-  check_interval_sec = 3
-  healthy_threshold = 3
+  name                = "tcp-proxy-health-check"
+  timeout_sec         = 3
+  check_interval_sec  = 3
+  healthy_threshold   = 3
   unhealthy_threshold = 5
 
   ssl_health_check {
@@ -66,22 +66,22 @@ resource "google_compute_global_forwarding_rule" "lb_nginx" {
 }
 
 resource "google_compute_target_https_proxy" "nginx" {
-  name            = "nginx-health-check"
+  name             = "nginx-health-check"
   ssl_certificates = [google_compute_ssl_certificate.k8s_apps.id]
-  url_map = google_compute_url_map.lb_nginx.id
+  url_map          = google_compute_url_map.lb_nginx.id
 }
 
 # backend service
 resource "google_compute_backend_service" "k8s_lb_nginx" {
-  name                  = "backend-nginx"
-  protocol              = "HTTP"
-  port_name             = "nginx"
-  timeout_sec           = 30
-  enable_cdn            = true
-  compression_mode     = "DISABLED"
-  health_checks         = [google_compute_health_check.nginx.id]
+  name             = "backend-nginx"
+  protocol         = "HTTP"
+  port_name        = "nginx"
+  timeout_sec      = 30
+  enable_cdn       = true
+  compression_mode = "DISABLED"
+  health_checks    = [google_compute_health_check.nginx.id]
   backend {
-    group           = google_compute_region_instance_group_manager.mig_worker.instance_group
+    group           = var.mig_worker.instance_group
     balancing_mode  = "UTILIZATION"
     max_utilization = 0.8
     capacity_scaler = 1.0
@@ -104,14 +104,14 @@ resource "google_compute_backend_service" "k8s_lb_nginx" {
 }
 
 resource "google_compute_health_check" "nginx" {
-  name               = "nginx-health-check"
-  timeout_sec        = 5
-  check_interval_sec = 5
-  healthy_threshold = 2
+  name                = "nginx-health-check"
+  timeout_sec         = 5
+  check_interval_sec  = 5
+  healthy_threshold   = 2
   unhealthy_threshold = 2
 
   http_health_check {
-    port = "31215"
+    port         = var.http_ingress_nodeport
     request_path = "/healthz"
   }
 }

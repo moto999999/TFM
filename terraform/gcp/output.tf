@@ -1,17 +1,18 @@
+######### bastion #########
 output "bastion_public_ip" {
-  value = format("%s_public_ip: %s", google_compute_instance.instance-bastion.name, google_compute_instance.instance-bastion.network_interface.0.access_config[0].nat_ip)
+  value = format("%s_public_ip: %s", module.instances.bastion_instance.name, module.instances.bastion_instance.network_interface.0.access_config[0].nat_ip)
 }
 
 output "bastion_private_ip" {
-  value = format("%s_private_ip: %s", google_compute_instance.instance-bastion.name, google_compute_instance.instance-bastion.network_interface.0.network_ip)
+  value = format("%s_private_ip: %s", module.instances.bastion_instance.name, module.instances.bastion_instance.network_interface.0.network_ip)
 }
 
 ######### control plane #########
 data "google_compute_region_instance_group" "mig_data_control_plane" {
-  name   = google_compute_region_instance_group_manager.mig_control_plane.name
+  name   = module.instances.mig_control_plane.name
   region = var.region
   depends_on = [
-    google_compute_region_instance_group_manager.mig_control_plane
+    module.instances.mig_control_plane
   ]
 }
 
@@ -35,10 +36,10 @@ output "control_plane_ips" {
 
 ######### worker #########
 data "google_compute_region_instance_group" "mig_data_worker" {
-  name   = google_compute_region_instance_group_manager.mig_worker.name
+  name   = module.instances.mig_worker.name
   region = var.region
   depends_on = [
-    google_compute_region_instance_group_manager.mig_worker
+    module.instances.mig_worker
   ]
 }
 
@@ -61,5 +62,5 @@ output "worker_ips" {
 }
 
 output "lb_ip" {
-  value = format("%s: %s", "lb_ip", google_compute_global_address.k8s_lb.address)
+  value = format("%s: %s", "lb_ip", module.lb.k8s_lb.address)
 }

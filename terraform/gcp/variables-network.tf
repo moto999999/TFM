@@ -20,3 +20,8 @@ variable "ip_cidr_range" {
     worker        = "10.0.2.0/24"
   }
 }
+
+variable "http_ingress_nodeport" {
+  type    = string
+  default = "30080"
+}
