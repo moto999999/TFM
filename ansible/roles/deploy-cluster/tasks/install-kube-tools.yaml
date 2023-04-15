@@ -12,7 +12,7 @@
 - name: install kubectl
   yum:
     name:
-      - kubectl-1.24.10
+      - kubectl-{{ k8s.version }}
     state: present
   when: inventory_hostname in groups['bastion']
 
@@ -20,7 +20,7 @@
 - name: install kubelet and kubeadm
   yum:
     name:
-      - "{{ item }}-1.24.10"
+      - "{{ item }}-{{ k8s.version }}"
     state: present
   with_items: 
     - kubelet

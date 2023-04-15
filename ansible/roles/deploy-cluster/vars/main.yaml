@@ -4,6 +4,9 @@ lb:
   lb_dns: ip_lb
   lb_port: 6443
 
+k8s:
+  version: 1.26.3
+
 nfs_disk:
   partition: /dev/sdb
   path: /mnt/disks/pv-disk
