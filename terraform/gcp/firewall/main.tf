@@ -1,21 +1,21 @@
 resource "google_compute_firewall" "firewall_rule_bastion_ssh" {
   name        = "ssh-bastion-external"
   network     = var.k8s_network_id
-  description = "Create firewall rule to allow external ssh connections to bastion"
+  description = "Create firewall rule to allow external ssh connections to the bastion instance"
 
   allow {
     protocol = "tcp"
     ports    = ["22"]
   }
 
-  source_ranges = ["0.0.0.0/0"] # It would be better if only known hosts were allowed
+  source_ranges = ["0.0.0.0/0"]
   target_tags   = [var.tags["bastion"]]
 }
 
 resource "google_compute_firewall" "firewall_rule_internal_ssh" {
   name        = "ssh-internal"
   network     = var.k8s_network_id
-  description = "Create firewall rule to allow internal ssh connections from bastion"
+  description = "Create firewall rule to allow internal ssh connections from the bastion instance"
 
   allow {
     protocol = "tcp"
@@ -29,7 +29,7 @@ resource "google_compute_firewall" "firewall_rule_internal_ssh" {
 resource "google_compute_firewall" "firewall_rule_api_server" {
   name        = "kubernetes-api-server"
   network     = var.k8s_network_id
-  description = "Create firewall rule for api server"
+  description = "Create firewall rule to allow access to the Kubernetes API server"
 
   allow {
     protocol = "tcp"
@@ -42,7 +42,7 @@ resource "google_compute_firewall" "firewall_rule_api_server" {
 resource "google_compute_firewall" "firewall_rule_allow_all_internal_control_plane" {
   name        = "allow-all-internal-control-plane"
   network     = var.k8s_network_id
-  description = "Creates firewall rule for allowing all traffic between control plane nodes"
+  description = "Creates firewall rule to allow all traffic between Kubernetes control plane nodes"
 
   allow {
     protocol = "tcp"
@@ -67,7 +67,7 @@ resource "google_compute_firewall" "firewall_rule_allow_all_internal_control_pla
 resource "google_compute_firewall" "firewall_rule_allow_all_internal_worker" {
   name        = "allow-all-internal-worker"
   network     = var.k8s_network_id
-  description = "Creates firewall rule for allowing all traffic between control plane nodes"
+  description = "Creates firewall rule  to allow all traffic between Kubernetes worker nodes"
 
   allow {
     protocol = "tcp"
@@ -92,7 +92,7 @@ resource "google_compute_firewall" "firewall_rule_allow_all_internal_worker" {
 resource "google_compute_firewall" "firewall_rule_allow_calico" {
   name        = "allow-calico-internal"
   network     = var.k8s_network_id
-  description = "Creates firewall rule for allowing all traffic between control plane nodes"
+  description = "Creates firewall rule to allow Calico networking traffic between control plane and worker nodes"
 
   allow {
     protocol = "tcp"
@@ -114,7 +114,7 @@ resource "google_compute_firewall" "firewall_rule_allow_calico" {
 resource "google_compute_firewall" "firewall_rule_allow_kubelet_api" {
   name        = "allow-kubelet-api"
   network     = var.k8s_network_id
-  description = "Creates firewall rule for allowing kubelet api traffic"
+  description = "Creates firewall rule to allow traffic to the kubelet API from control plane and worker nodes"
 
   allow {
     protocol = "tcp"
@@ -128,7 +128,7 @@ resource "google_compute_firewall" "firewall_rule_allow_kubelet_api" {
 resource "google_compute_firewall" "firewall_rule_allow_nodeports" {
   name        = "allow-nodeport-services"
   network     = var.k8s_network_id
-  description = "Creates firewall rule for allowing nodeport services"
+  description = "Creates firewall rule to allow traffic to nodeport services from control plane and worker nodes"
 
   allow {
     protocol = "tcp"
@@ -142,7 +142,7 @@ resource "google_compute_firewall" "firewall_rule_allow_nodeports" {
 resource "google_compute_firewall" "firewall_rule_nfs_server" {
   name        = "nfs-server"
   network     = var.k8s_network_id
-  description = "Creates firewall rule for nfs server"
+  description = "Creates firewall rule to allow access to the NFS server from worker and bastion instances"
 
   allow {
     protocol = "tcp"
@@ -161,7 +161,7 @@ resource "google_compute_firewall" "firewall_rule_nfs_server" {
 resource "google_compute_firewall" "firewall_rule_nginx" {
   name        = "ingress-nginx"
   network     = var.k8s_network_id
-  description = "Creates firewall rule for ingress nginx"
+  description = "Creates firewall rule to allow traffic to the ingress nginx nodeport service from external sources"
 
   allow {
     protocol = "tcp"
