@@ -39,7 +39,7 @@
   when: inventory_hostname in groups['control_plane_1']
 
 - name: Install calico (cni) with helm
-  shell: "helm install calico projectcalico/tigera-operator --version v3.25.0 --namespace calico-system"
+  shell: "helm install calico projectcalico/tigera-operator --version v3.25.1 --namespace calico-system"
   environment:
     PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
   when: inventory_hostname in groups['control_plane_1']
