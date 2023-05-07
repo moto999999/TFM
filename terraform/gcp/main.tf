@@ -6,10 +6,10 @@ terraform {
     }
   }
 
-  backend "gcs" {
-    bucket = "69525944e1c29c3t-bucket-tfstate"
-    prefix = "terraform/state"
-  }
+  # backend "gcs" {
+  #   bucket = "bucket_name"
+  #   prefix = "terraform/state"
+  # }
 }
 
 locals {
@@ -32,7 +32,7 @@ locals {
 
 # VPC module
 module "vpc" {
-  source = "./vpc"
+  source = "./modules/vpc"
 
   # Network configuration
   network_name    = var.network_name
@@ -44,7 +44,7 @@ module "vpc" {
 
 # Firewall module
 module "firewall" {
-  source = "./firewall"
+  source = "./modules/firewall"
   tags   = var.instance_tags
 
   # Network
@@ -54,7 +54,7 @@ module "firewall" {
 
 # Load balancer module
 module "lb" {
-  source = "./load-balancer"
+  source = "./modules/load-balancer"
 
   # Certificates
   certificate_private_key = var.certificate_private_key
@@ -71,7 +71,7 @@ module "lb" {
 
 # Instances module
 module "instances" {
-  source = "./instances"
+  source = "./modules/instances"
 
   # Machine configuration
   machine_type     = var.machine_type
@@ -99,11 +99,11 @@ module "instances" {
 
 # Disk management module
 module "disks" {
-  source = "./disks"
+  source = "./modules/disks"
 
   # Disk configuration
   disk_type    = var.disk_type
-  disk_size_gb = var.disk_size_gb
+  disk_size_gb = var.disk_size_nfs
 
   # Zone configuration
   zone   = var.zone
@@ -112,10 +112,14 @@ module "disks" {
 
 # DNS module
 module "dns" {
-  source = "./dns"
+  source = "./modules/dns"
 
   # Load Balancer instance
   k8s_lb = local.k8s_lb
+
+  # DNS names
+  dns_name  = "k8s-tfm.tk."
+  dns_names = ["prometheus", "prometheus-alertmanager", "grafana"]
 
   # Zone configuration
   zone   = var.zone

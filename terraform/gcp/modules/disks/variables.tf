@@ -11,5 +11,5 @@ variable "disk_type" {
 }
 
 variable "disk_size_gb" {
-  type = map(number)
+  type = string
 }

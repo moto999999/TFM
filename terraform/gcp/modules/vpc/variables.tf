@@ -1,5 +1,6 @@
 variable "network_name" {
   description = "The name of the network"
+  type = string
 }
 
 variable "subnetwork_name" {
@@ -14,4 +15,5 @@ variable "ip_cidr_range" {
 
 variable "region" {
   description = "The region where the network will be created"
+  type = string
 }

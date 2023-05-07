@@ -1,14 +1,14 @@
 variable "project" {
   type    = string
-  default = "tfm-uc3m-379611"
+  default = "tfm-uc3m-379318"
 }
 
 variable "region" {
   type    = string
-  default = "us-west4"
+  default = "europe-southwest1"
 }
 
 variable "zone" {
   type    = string
-  default = "us-west4-b"
+  default = "europe-southwest1-a"
 }

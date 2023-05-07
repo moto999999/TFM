@@ -9,3 +9,11 @@ variable "region" {
 }
 
 variable "k8s_lb" {}
+
+variable "dns_name" {
+  type = string
+}
+
+variable "dns_names" {
+  type    = list(string)
+}

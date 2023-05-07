@@ -10,7 +10,7 @@ output "bastion_private_ip" {
 ######### control plane #########
 data "google_compute_region_instance_group" "mig_data_control_plane" {
   name   = module.instances.mig_control_plane.name
-  region = var.region
+  region = "europe-west1"
   depends_on = [
     module.instances.mig_control_plane
   ]

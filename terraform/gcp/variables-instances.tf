@@ -21,13 +21,17 @@ variable "disk_size_gb" {
     control_plane = "50"
     worker        = "50"
     bastion       = "25"
-    nfs           = "100"
   }
+}
+
+variable "disk_size_nfs" {
+  type    = string
+  default = "100"
 }
 
 variable "image" {
   type    = string
-  default = "rocky-linux-9-optimized-gcp-v20221102" # https://stackoverflow.com/questions/62638916/how-to-provide-image-name-in-gcp-terraform-script
+  default = "rocky-linux-9-optimized-gcp-v20230411"
 }
 
 variable "ssh_user" {

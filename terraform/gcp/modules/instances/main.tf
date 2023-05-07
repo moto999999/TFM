@@ -61,7 +61,7 @@ resource "google_compute_instance_template" "control_plane" {
 # MIG for control planes
 resource "google_compute_region_instance_group_manager" "mig_control_plane" {
   name   = "k8s-control-plane-mig"
-  region = var.region
+  region = "europe-west1"
   version {
     instance_template = google_compute_instance_template.control_plane.id
     name              = "control-plane"

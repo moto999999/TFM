@@ -9,7 +9,7 @@ resource "google_compute_disk" "nfs_disk" {
   zone = var.zone
 
   type = var.disk_type["ssd"]
-  size = var.disk_size_gb["nfs"]
+  size = var.disk_size_gb
 
 }
 
