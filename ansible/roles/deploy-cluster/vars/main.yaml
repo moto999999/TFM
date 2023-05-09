@@ -1,8 +1,8 @@
 ---
 # loadbalancer info
 lb: 
-  lb_dns: ip_lb
-  lb_port: 6443
+  ip: ip_lb
+  port_apiserver: 6443
 
 k8s:
   version: 1.26.3
