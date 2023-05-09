@@ -24,3 +24,9 @@ bastion:
 
 helm:
   path: /var/lib/snapd/snap/bin/helm
+
+ingress:
+  hosts:
+    prometheus-server: prometheus.k8s-tfm.tk
+    alert-manager: prometheus-alertmanager.k8s-tfm.tk
+    grafana: grafana.k8s-tfm.tk
