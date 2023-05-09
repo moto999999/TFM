@@ -24,12 +24,22 @@
     kubectl -n minio rollout status deployment minio
   when: inventory_hostname in groups['bastion']
 
+- name: Copy ingress routes to bastion
+  template:
+    src: configuration_files/ingress_routes_minio.yaml
+    dest: "{{ ansible_env.HOME }}/ingress_routes.yaml"
+  when: inventory_hostname in groups['bastion']
+
+- name: Apply ingress rule
+  shell: kubectl apply -f {{ ansible_env.HOME }}/ingress_routes_minio.yaml
+  when: inventory_hostname in groups['bastion']
+
 - name: Download and install velero
   shell: > 
     yum install -y wget && \
-    wget https://github.com/vmware-tanzu/velero/releases/download/v1.10.0/velero-v1.10.0-linux-amd64.tar.gz -P {{ ansible_env.HOME }} && \
-    tar -xvf {{ ansible_env.HOME }}/velero-v1.10.0-linux-amd64.tar.gz -C {{ ansible_env.HOME }} && \
-    mv {{ ansible_env.HOME }}/velero-v1.10.0-linux-amd64/velero /usr/local/bin
+    wget https://github.com/vmware-tanzu/velero/releases/download/v1.11.0/velero-v1.11.0-linux-amd64.tar.gz -P {{ ansible_env.HOME }} && \
+    tar -xvf {{ ansible_env.HOME }}/velero-v1.11.0-linux-amd64.tar.gz -C {{ ansible_env.HOME }} && \
+    mv {{ ansible_env.HOME }}/velero-v1.11.0-linux-amd64/velero /usr/local/bin
   when: inventory_hostname in groups['bastion']
 
 - name: Copy velero credentials to bastion
@@ -42,7 +52,7 @@
   shell: >
    /usr/local/bin/velero install \
     --provider aws \
-    --plugins velero/velero-plugin-for-aws:v1.5.3 \
+    --plugins velero/velero-plugin-for-aws:v1.7.0 \
     --bucket velero \
     --secret-file {{ ansible_env.HOME }}/credentials-velero \
     --use-volume-snapshots=false \
