@@ -1,13 +1,65 @@
-server:
-  persistentVolume:
-    size: 25Gi
+prometheusOperator:
+  tls:
+    enabled: false
+    admissionWebhooks:
+      enabled: false
+      patch:
+        enabled: false
+  prometheusSpec:
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: nfs
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 25Gi
 
-serverFiles:
-  alerting_rules.yml:
+grafana:
+  # Provision grafana-dashboards-kubernetes
+  defaultDashboardsEnabled: false
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+      - name: 'grafana-dashboards-kubernetes'
+        orgId: 1
+        folder: 'Kubernetes'
+        type: file
+        disableDeletion: true
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/grafana-dashboards-kubernetes
+  dashboards:
+    grafana-dashboards-kubernetes:
+      k8s-system-api-server:
+        url: https://raw.githubusercontent.com/dotdc/grafana-dashboards-kubernetes/master/dashboards/k8s-system-api-server.json
+        token: ''
+      k8s-system-coredns:
+        url: https://raw.githubusercontent.com/dotdc/grafana-dashboards-kubernetes/master/dashboards/k8s-system-coredns.json
+        token: ''
+      k8s-views-global:
+        url: https://raw.githubusercontent.com/dotdc/grafana-dashboards-kubernetes/master/dashboards/k8s-views-global.json
+        token: ''
+      k8s-views-namespaces:
+        url: https://raw.githubusercontent.com/dotdc/grafana-dashboards-kubernetes/master/dashboards/k8s-views-namespaces.json
+        token: ''
+      k8s-views-nodes:
+        url: https://raw.githubusercontent.com/dotdc/grafana-dashboards-kubernetes/master/dashboards/k8s-views-nodes.json
+        token: ''
+      k8s-views-pods:
+        url: https://raw.githubusercontent.com/dotdc/grafana-dashboards-kubernetes/master/dashboards/k8s-views-pods.json
+        token: ''
+
+defaultRules:
+  create: false
+
+additionalPrometheusRulesMap:
+  prometheus.rules:
     groups:
-    - name: k8s alerts
+    - name: k8s-alerts
       rules:
-      - alert: Kubernetes node down
+      - alert: KubernetesNodeDown
         expr: kube_node_status_condition{condition="Ready",status="true"} == 0
         for: 3m
         labels:
@@ -18,18 +70,7 @@ serverFiles:
           Environment: "DES"
           Project: "tfm-monitoring"
           Priority: "Immediate"
-      - alert: Target job is down
-        expr: (up {kubernetes_name!="prometheus-node-exporter"}) == 0
-        for: 3m
-        labels:
-          severity: critical
-        annotations:
-          Summary: Target job={{ $labels.job }}, app={{ $labels.app }}, namespace={{ $labels.kubernetes_namespace }} on instance {{ $labels.instance }} is down
-          Description: Failed to scrape {{ $labels.node }} for more than 3 minutes. Node seems down.
-          Environment: "DES"
-          Project: "tfm-monitoring"
-          Priority: "Urgent"
-      - alert: Disk Pressure
+      - alert: DiskPressure
         expr: kube_node_status_condition{condition="DiskPressure",status="true"} == 1
         for: 1m
         labels:
@@ -40,7 +81,7 @@ serverFiles:
           Environment: "DES"
           Project: "tfm-monitoring"
           Priority: "High"
-      - alert: Disk usage in node is at 85%
+      - alert: DiskUsageInNodeAt85
         expr: (100 - ((node_filesystem_avail_bytes{mountpoint="/",fstype!="rootfs"} * 100) / node_filesystem_size_bytes{mountpoint="/",fstype!="rootfs"})) > 85
         for: 1m
         labels:
@@ -51,18 +92,7 @@ serverFiles:
           Environment: "DES"
           Project: "tfm-monitoring"
           Priority: "High"
-      - alert: Disk usage in node is at 85%
-        expr: (100 - ((node_filesystem_avail_bytes{mountpoint="/",fstype!="rootfs"} * 100) / node_filesystem_size_bytes{mountpoint="/",fstype!="rootfs"})) > 85
-        for: 1m
-        labels:
-          severity: warning
-        annotations:
-          Summary: Disk usage on {{ $labels.node }}
-          Description: Node {{ $labels.node }} is now at {{ $value }}%
-          Environment: "DES"
-          Project: "tfm-monitoring"
-          Priority: "High"
-      - alert: Disk usage in node is at 95%
+      - alert: DiskUsageInNodeAt95
         expr: (100 - ((node_filesystem_avail_bytes{mountpoint="/",fstype!="rootfs"} * 100) / node_filesystem_size_bytes{mountpoint="/",fstype!="rootfs"})) > 95
         for: 1m
         labels:
@@ -73,7 +103,7 @@ serverFiles:
           Environment: "DES"
           Project: "tfm-monitoring"
           Priority: "Urgent"
-      - alert: Volume Full In Four Days
+      - alert: VolumeFullInFourDays
         expr: predict_linear(kubelet_volume_stats_available_bytes{namespace!~"pre-.*|des-.*|pro-.*"}[4d], 4 * 24 * 3600) < 0
         for: 1m
         labels:
@@ -84,7 +114,7 @@ serverFiles:
           Environment: "DES"
           Project: "tfm-monitoring"
           Priority: "Normal"
-      - alert: Persistent Volume Error
+      - alert: PersistentVolumeError
         expr: kube_persistentvolume_status_phase{phase=~"Failed|Pending"} > 0
         for: 1m
         labels:
@@ -96,7 +126,7 @@ serverFiles:
           Namespace: "{{ $labels.namespace }}"
           Project: "tfm-monitoring"
           Priority: "High"
-      - alert: Persistent volume has low free space (> 85% used)
+      - alert: PersistentVolumeHasLowFreeSpace
         expr: ((kubelet_volume_stats_used_bytes{namespace!~"pre-.*|des-.*|pro-.*"} / kubelet_volume_stats_capacity_bytes) * 100) > 85
         for: 1m
         labels:
@@ -108,7 +138,7 @@ serverFiles:
           Namespace: "{{ $labels.namespace }}"
           Project: "tfm-monitoring"
           Priority: "High"
-      - alert: CPU utilization in node higher than 85%
+      - alert: CPUUtilizationInNodeHigherThan85
         expr: (100 - (avg by (node) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) > 85
         for: 1m
         labels:
@@ -119,7 +149,7 @@ serverFiles:
           Environment: "DES"
           Project: "tfm-monitoring"
           Priority: "High"
-      - alert: CPU utilization in pod is at 85%
+      - alert: CPUUtilizationInPodIsAt85
         expr: (sum(rate(container_cpu_usage_seconds_total{container_name!="POD", namespace!~"pre-.*|des-.*|pro-.*", pod!~".*backrest.*|.*node-agent.*"}[5m])) by (pod, namespace) / ((sum by(pod,namespace) (kube_pod_container_resource_limits_cpu_cores))) * 100) > 85
         for: 1m
         labels:
@@ -132,7 +162,7 @@ serverFiles:
           Pod: "{{ $labels.pod }}"
           Project: "tfm-monitoring"
           Priority: "Normal"
-      - alert: Kubernetes node memory utilization is at 90%
+      - alert: KubernetesNodeMemoryUtilizationIsAt90
         expr: ((1 - (node_memory_MemAvailable_bytes{job!~".*node_exporter.*"} / (node_memory_MemTotal_bytes)))*100) > 90
         for: 1m
         labels:
@@ -143,19 +173,8 @@ serverFiles:
           Environment: "DES"
           Project: "tfm-monitoring"
           Priority: "Urgent"
-      - alert: Node memory utilization is at 90%
-        expr: ((1 - (node_memory_MemAvailable_bytes{job=~".*node_exporter.*"} / (node_memory_MemTotal_bytes)))*100) > 90
-        for: 1m
-        labels:
-          severity: warning
-        annotations:
-          Summary: Memory utilization is high on {{ $labels.job }}
-          Description: Node {{ $labels.instance }} is now at {{ $value }}%
-          Environment: "DES"
-          Project: "tfm-monitoring"
-          Priority: "Urgent"
-      - alert: Nodes availables
-        expr: sum(up{component="node-exporter"}) < 7
+      - alert: NodesAvailables
+        expr: sum(up{component="node-exporter"}) < 5
         for: 1m
         labels:
           severity: critical
@@ -165,7 +184,7 @@ serverFiles:
           Environment: "DES"
           Project: "tfm-monitoring"
           Priority: "Immediate"
-      - alert: Low statefulset replicas running
+      - alert: LowStatefulsetReplicasRunning
         expr: (kube_statefulset_status_replicas_ready{namespace!~"pre-.*|des-.*|pro-.*"} / kube_statefulset_status_replicas_current) < 1
         for: 3m
         labels:
@@ -177,7 +196,7 @@ serverFiles:
           Namespace: "{{ $labels.namespace }}"
           Project: "tfm-monitoring"
           Priority: "High"
-      - alert: Low deployment replicas running
+      - alert: LowDeploymentReplicasRunning
         expr: kube_deployment_status_replicas{namespace!~"pre-.*|des-.*|pro-.*"} > kube_deployment_status_replicas_available
         for: 3m
         labels:
@@ -189,7 +208,7 @@ serverFiles:
           Namespace: "{{ $labels.namespace }}"
           Project: "tfm-monitoring"
           Priority: "High"
-      - alert: Restart loop in a pod
+      - alert: RestartLoopInPod
         expr: rate(kube_pod_container_status_restarts_total{namespace!~"pre-.*|des-.*|pro-.*"}[5m]) > 3
         for: 3m
         labels:
@@ -202,7 +221,7 @@ serverFiles:
           Pod: "{{ $labels.pod }}"
           Project: "tfm-monitoring"
           Priority: "Urgent"
-      - alert: Pod terminated with errors
+      - alert: PodTerminatedWithErrors
         expr: kube_pod_container_status_terminated_reason{reason!~"Completed", namespace!~"pre-.*|des-.*|pro-.*", pod!~".*backrest.*"} == 1
         for: 3m
         labels:
@@ -215,7 +234,7 @@ serverFiles:
           Pod: "{{ $labels.pod }}"
           Project: "tfm-monitoring"
           Priority: "High"
-      - alert: Not all ETCD pods are running
+      - alert: NotAllETCDPodsAreRunning
         expr: (sum(kube_pod_container_info{container="etcd"})) < 3
         for: 3m
         labels:
@@ -226,7 +245,7 @@ serverFiles:
           Environment: "DES"
           Project: "tfm-monitoring"
           Priority: "Urgent"
-      - alert: API server status
+      - alert: APIServerStatus
         expr: kube_pod_container_status_running{container=~"kube-apiserver"} == 0
         for: 1m
         labels:
@@ -239,7 +258,7 @@ serverFiles:
           Pod: "{{ $labels.pod }}"
           Project: "tfm-monitoring"
           Priority: "Urgent"
-      - alert: Pod memory utilization is at 85%
+      - alert: PodMemoryUtilizationIsAt85
         expr: ((avg (container_memory_working_set_bytes{namespace!~"pre-.*|des-.*|pro-.*"}) by (pod))/ on (pod)(avg (container_spec_memory_limit_bytes>0 ) by (pod))*100) > 85
         for: 1m
         labels:
@@ -252,7 +271,7 @@ serverFiles:
           Pod: "{{ $labels.pod }}"
           Project: "tfm-monitoring"
           Priority: "High"
-      - alert: Service is down
+      - alert: ServiceIsDown
         expr: kube_service_info{namespace!~"pre-.*|des-.*|pro-.*"} == 0
         for: 3m
         labels:
@@ -265,9 +284,9 @@ serverFiles:
           Service: "{{ $labels.service }}"
           Project: "tfm-monitoring"
           Priority: "High"
-    - name: PostgresSQL alerts
+    - name: PostgresSQL-alerts
       rules:
-      - alert: DB conflicts higher than 20
+      - alert: DBConflictsHigherThan20
         expr: sum(pg_stat_database_conflicts) by (server) > 20
         for: 1m
         labels:
@@ -278,7 +297,7 @@ serverFiles:
           Environment: "DES"
           Project: "tfm-monitoring"
           Priority: "High"
-      - alert: DB Locks higher than 50
+      - alert: DBLocksHigherThan50
         expr: sum(pg_locks_count) by (server) > 50
         for: 1m
         labels:
@@ -289,7 +308,7 @@ serverFiles:
           Environment: "DES"
           Project: "tfm-monitoring"
           Priority: "High"
-      - alert: Postgres is down
+      - alert: PostgresIsDown
         expr: up{job="postgres_exporter"} == 0
         for: 3m
         labels:
@@ -300,7 +319,7 @@ serverFiles:
           Environment: "DES"
           Project: "tfm-monitoring"
           Priority: "Urgent"
-      - alert: Current connections in DB is at 85%
+      - alert: CurrentConnectionsInDBIsAt85
         expr: ((sum(pg_settings_superuser_reserved_connections) by (server) + sum(pg_stat_activity_count) by (server)) / sum(pg_settings_max_connections) by (server)) * 100 > 85
         for: 3m
         labels:
@@ -311,7 +330,7 @@ serverFiles:
           Environment: "DES"
           Project: "tfm-monitoring"
           Priority: "Urgent"
-      - alert: Current connections in DB 100%
+      - alert: CurrentConnectionsInDB100
         expr: ((sum(pg_settings_superuser_reserved_connections) by (server) + sum(pg_stat_activity_count) by (server)) / sum(pg_settings_max_connections) by (server)) * 100 > 99
         for: 3m
         labels:
@@ -322,7 +341,7 @@ serverFiles:
           Environment: "DES"
           Project: "tfm-monitoring"
           Priority: "Immediate"
-      - alert: Replication lag
+      - alert: ReplicationLag
         expr: pg_replication_lag > 10
         for: 3m
         labels:

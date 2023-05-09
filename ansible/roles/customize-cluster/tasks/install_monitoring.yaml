@@ -12,7 +12,7 @@
 
 - name: Install prometheus
   shell: >
-   helm install prometheus prometheus-community/prometheus \
+   helm install prometheus prometheus-community/kube-prometheus-stack \
    --values {{ ansible_env.HOME }}/prometheus_values.yaml \
    -n monitoring --create-namespace
   environment:
@@ -21,41 +21,15 @@
 
 - name: Wait for deployment
   shell: >
-    kubectl -n monitoring rollout status deployment prometheus-server
-  when: inventory_hostname in groups['bastion']
-
-- name: Copy grafana install values to bastion
-  copy:
-    src: configuration_files/grafana_values.yaml
-    dest: "{{ ansible_env.HOME }}/grafana_values.yaml"
-  when: inventory_hostname in groups['bastion']
-
-- name: Add grafana repo
-  shell: "helm repo add grafana https://grafana.github.io/helm-charts"
-  environment:
-    PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
-  when: inventory_hostname in groups['bastion']
-
-- name: Install grafana
-  shell: >
-   helm install grafana grafana/grafana \
-   --values {{ ansible_env.HOME }}/grafana_values.yaml \
-   -n monitoring
-  environment:
-    PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
-  when: inventory_hostname in groups['bastion']
-
-- name: Wait for deployment
-  shell: >
-    kubectl -n monitoring rollout status deployment grafana
+    kubectl -n monitoring rollout status deployment prometheus-kube-prometheus-operator
   when: inventory_hostname in groups['bastion']
 
 - name: Copy ingress routes to bastion
   template:
     src: configuration_files/ingress_routes.yaml
-    dest: "{{ ansible_env.HOME }}/ingress_routes.yaml"
+    dest: "{{ ansible_env.HOME }}/ingress_routes_monitoring.yaml"
   when: inventory_hostname in groups['bastion']
 
 - name: Apply ingress rule
-  shell: kubectl apply -f {{ ansible_env.HOME }}/ingress_routes.yaml
+  shell: kubectl apply -f {{ ansible_env.HOME }}/ingress_routes_monitoring.yaml
   when: inventory_hostname in groups['bastion']
