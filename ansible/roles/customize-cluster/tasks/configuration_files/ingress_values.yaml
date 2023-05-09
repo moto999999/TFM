@@ -1,6 +1,6 @@
 controller:
   service:
-    externalIPs: ["{{ lb.lb_dns }}"]
+    externalIPs: ["{{ lb.ip }}"]
     nodePorts:
       http: "30080"
       https: "30443"
