@@ -67,6 +67,9 @@ module "lb" {
   # Network
   k8s_network           = local.k8s_network
   http_ingress_nodeport = var.http_ingress_nodeport
+
+  # DNS name
+  dns_name = var.dns_name
 }
 
 # Instances module
@@ -118,8 +121,8 @@ module "dns" {
   k8s_lb = local.k8s_lb
 
   # DNS names
-  dns_name  = "k8s-tfm.tk."
-  dns_names = ["prometheus", "prometheus-alertmanager", "grafana"]
+  dns_name  = var.dns_name
+  dns_names = var.dns_names
 
   # Zone configuration
   zone   = var.zone

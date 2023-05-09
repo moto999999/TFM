@@ -120,7 +120,7 @@ resource "google_compute_url_map" "lb_nginx" {
   default_service = google_compute_backend_service.k8s_lb_nginx.id
 
   host_rule {
-    hosts        = ["prometheus.k8s-tfm.tk", "prometheus-alertmanager.k8s-tfm.tk", "grafana.k8s-tfm.tk"]
+    hosts        = ["*.${var.dns_name}"]
     path_matcher = "path-matcher-1"
   }
 

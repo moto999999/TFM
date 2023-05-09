@@ -15,3 +15,7 @@ variable "k8s_network" {}
 variable "http_ingress_nodeport" {
   type = string
 }
+
+variable "dns_name" {
+  type = string
+}
