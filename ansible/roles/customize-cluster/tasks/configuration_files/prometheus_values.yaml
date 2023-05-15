@@ -1,20 +1,4 @@
-prometheusOperator:
-  tls:
-    enabled: false
-    admissionWebhooks:
-      enabled: false
-      patch:
-        enabled: false
-  prometheusSpec:
-    storageSpec:
-      volumeClaimTemplate:
-        spec:
-          storageClassName: nfs
-          accessModes: ["ReadWriteOnce"]
-          resources:
-            requests:
-              storage: 25Gi
-
+##### Grafana #####
 grafana:
   # Provision grafana-dashboards-kubernetes
   defaultDashboardsEnabled: false
@@ -51,8 +35,46 @@ grafana:
         url: https://raw.githubusercontent.com/dotdc/grafana-dashboards-kubernetes/master/dashboards/k8s-views-pods.json
         token: ''
 
+##### Alertmanager #####
+alertmanager:
+  enabled: true
+  config:
+    route:
+      group_by: ['alertname']
+      group_wait: 0s
+      group_interval: 5m
+      repeat_interval: 12h
+      routes:
+      - receiver: 'autoremediate'
+      receiver: "autoremediate"
+    receivers:
+    - name: 'autoremediate'
+      webhook_configs:
+      - send_resolved: false
+        url: http://k8s-api.infra.svc.cluster.local/api/
+
+##### Prometheus #####
 defaultRules:
   create: false
+
+prometheusOperator:
+  tls:
+    enabled: false
+    admissionWebhooks:
+      enabled: false
+      patch:
+        enabled: false
+
+prometheus:
+  prometheusSpec:
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: nfs
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 25Gi
 
 additionalPrometheusRulesMap:
   prometheus.rules:
@@ -284,6 +306,17 @@ additionalPrometheusRulesMap:
           Service: "{{ $labels.service }}"
           Project: "tfm-monitoring"
           Priority: "High"
+      - alert: PodUnschedulable
+        expr: kube_pod_status_phase{phase="Pending"} == 1
+        for: 1s
+        labels:
+          severity: critical
+        annotations:
+          Summary: Pod {{ $labels.pod }} is unschedulable
+          Description: Pod {{ $labels.pod }} has been unschedulable for more than 3 minutes.
+          Environment: "DES"
+          Project: "tfm-monitoring"
+          Priority: "Immediate"
     - name: PostgresSQL-alerts
       rules:
       - alert: DBConflictsHigherThan20
