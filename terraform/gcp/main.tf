@@ -6,10 +6,10 @@ terraform {
     }
   }
 
-  # backend "gcs" {
-  #   bucket = "bucket_name"
-  #   prefix = "terraform/state"
-  # }
+  backend "gcs" {
+    bucket = "terraform_state_5342"
+    prefix = "terraform/state"
+  }
 }
 
 locals {
