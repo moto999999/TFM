@@ -38,12 +38,12 @@ resource "google_compute_backend_service" "k8s_lb_api_server" {
 
 resource "google_compute_health_check" "api_server" {
   name                = "tcp-proxy-health-check"
-  timeout_sec         = 3
-  check_interval_sec  = 3
-  healthy_threshold   = 3
+  timeout_sec         = 20
+  check_interval_sec  = 20
+  healthy_threshold   = 2
   unhealthy_threshold = 5
 
-  ssl_health_check {
+  tcp_health_check {
     port = "6443"
   }
 }
