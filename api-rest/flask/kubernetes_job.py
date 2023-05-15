@@ -1,18 +1,20 @@
 from kubernetes import client
 
-JOB_NAME = "terraform-gcp"
-APP_NAME = "terraform-gcp"
-NAMESPACE = "infra-auto-remediate-api"
+NAMESPACE = "infra"
 
-def create_job_object():
+def create_job_object(job_name, app_name, imageToLaunch):
     # Configureate Pod template container
     container = client.V1Container(
-        name="terraform-gcp",
-        image="moto999999/terraform_gcp:latest")
-        #command=["perl", "-Mbignum=bpi", "-wle", "print bpi(2000)"])
+        name=app_name,
+        image=imageToLaunch,
+        env=[
+        client.V1EnvVar(name='GOOGLE_APPLICATION_CREDENTIALS', value='/infra/gcloud-auth-key/tfm-uc3m-sa.json'),
+        client.V1EnvVar(name='GITHUB_ACCESS_TOKEN', value_from=client.V1EnvVarSource(secret_key_ref=client.V1SecretKeySelector(name='github-auth-token', key='github_token')))
+        ]
+    )
     # Create and configure a spec section
     template = client.V1PodTemplateSpec(
-        metadata=client.V1ObjectMeta(labels={"app": APP_NAME}),
+        metadata=client.V1ObjectMeta(labels={"app": app_name}),
         spec=client.V1PodSpec(restart_policy="Never", containers=[container]))
     # Create the specification of deployment
     spec = client.V1JobSpec(
@@ -22,7 +24,7 @@ def create_job_object():
     job = client.V1Job(
         api_version="batch/v1",
         kind="Job",
-        metadata=client.V1ObjectMeta(name=JOB_NAME),
+        metadata=client.V1ObjectMeta(name=job_name),
         spec=spec)
 
     return job

@@ -1,6 +1,8 @@
 FROM python:alpine3.17
 EXPOSE 5000
 
+RUN apk add git
+
 ENV FLASK_APP=prometheus
 
 WORKDIR /app
