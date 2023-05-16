@@ -8,6 +8,8 @@ import logging
 from machine_to_provision import machineToProvision
 from update_terraform_code import updateWorkerNumber
 
+import threading
+
 app = Flask(__name__)
 
 logging.basicConfig(level=logging.DEBUG)
@@ -29,16 +31,21 @@ def prometheus():
 
     # Check if the alert is for a unschedulable Pod
     if labels['alertname'] == 'PodUnschedulable':
-        # Call the method to scale up the cluster
-        machine_to_provision = machineToProvision(labels, app, requests, PROMETHEUS_URL)
-
-        updateWorkerNumber()
-        config.load_incluster_config()
-        batch_v1 = client.BatchV1Api()
-
-        job = kubernetes_job.create_job_object("terraform-gcp", "terraform-gcp", "moto999999/terraform_gcp:latest")
-
-        kubernetes_job.create_job(batch_v1, job, app.logger)
+        # Create a new thread and start it
+        t = threading.Thread(target=podUnschedulable, args=(labels,))
+        t.start()
 
     # Return the response data as it is
     return json
+
+def podUnschedulable(labels):
+    # Call the method to scale up the cluster
+    machine_to_provision = machineToProvision(labels, app, requests, PROMETHEUS_URL)
+
+    updateWorkerNumber()
+    config.load_incluster_config()
+    batch_v1 = client.BatchV1Api()
+
+    job = kubernetes_job.create_job_object("scale-cluster-up", "terraform-gcp", "moto999999/terraform_gcp:latest")
+
+    kubernetes_job.create_job(batch_v1, job, app.logger)

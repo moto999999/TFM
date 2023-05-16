@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8s-api-app
+  namespace: infra
+  labels:
+    app: k8s-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: k8s-api
+  template:
+    metadata:
+      labels:
+        app: k8s-api
+    spec:
+      containers:
+        - image: moto999999/k8s_api_rest:latest
+          resources:
+            requests:
+              memory: "200Mi" #"5000Mi"
+              cpu: "50m" #"1000m"
+            limits:
+              memory: "400Mi" #"5000Mi"
+              cpu: "200m" #"1000m"
+          imagePullPolicy: Always
+          name: k8s-api
+          ports:
+            - containerPort: 5000
+              name: api
+          env:
+            - name: GITHUB_ACCESS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: github-auth-token
+                  key: github_token
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: k8s-api
+  namespace: infra
+  labels:
+    app: k8s-api
+spec:
+  type: ClusterIP
+  selector:
+    app: k8s-api
+  ports:
+    - port: 80
+      targetPort: 5000
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: job-creator
+  namespace: infra
+rules:
+- apiGroups: ["batch"]
+  resources: ["jobs"]
+  verbs: ["create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: job-creator-binding
+  namespace: infra
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: infra
+roleRef:
+  kind: Role
+  name: job-creator
+  apiGroup: rbac.authorization.k8s.io
