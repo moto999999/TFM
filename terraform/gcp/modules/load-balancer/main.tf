@@ -71,6 +71,21 @@ resource "google_compute_target_https_proxy" "nginx" {
   url_map          = google_compute_url_map.lb_nginx.id
 }
 
+# forwarding rule
+resource "google_compute_global_forwarding_rule" "lb_nginx_http" {
+  name                  = "lb-nginx-http"
+  ip_protocol           = "TCP"
+  load_balancing_scheme = "EXTERNAL"
+  port_range            = "80"
+  target                = google_compute_target_http_proxy.nginx_http.id
+  ip_address            = google_compute_global_address.k8s_lb.id
+}
+
+resource "google_compute_target_http_proxy" "nginx_http" {
+  name             = "nginx-health-check"
+  url_map          = google_compute_url_map.lb_nginx.id
+}
+
 # backend service
 resource "google_compute_backend_service" "k8s_lb_nginx" {
   name             = "backend-nginx"
