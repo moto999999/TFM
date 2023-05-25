@@ -5,7 +5,7 @@ lb:
   port_apiserver: 6443
 
 k8s:
-  version: 1.26.3
+  version: 1.26.5
 
 nfs_disk:
   partition: /dev/sdb
