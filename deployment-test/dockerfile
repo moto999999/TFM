@@ -1,0 +1,4 @@
+FROM immoral36/webapp
+
+COPY events.js /app/app/static/js/events.js
+RUN chmod +x /app/app/static/js/events.js
