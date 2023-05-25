@@ -16,7 +16,7 @@ spec:
                 port:
                   number: 9001
             path: /
-    - host: "{{ ingress.hosts.minio-console }}"
+    - host: "{{ ingress.hosts.minio_console }}"
       http:
         paths:
           - pathType: Prefix

@@ -6,7 +6,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: "{{ ingress.hosts.prometheus-server }}"
+    - host: "{{ ingress.hosts.prometheus_server }}"
       http:
         paths:
           - pathType: Prefix
@@ -16,7 +16,7 @@ spec:
                 port:
                   number: 9090
             path: /
-    - host: "{{ ingress.hosts.alert-manager }}"
+    - host: "{{ ingress.hosts.alert_manager }}"
       http:
         paths:
           - pathType: Prefix

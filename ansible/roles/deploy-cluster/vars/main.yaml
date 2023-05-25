@@ -27,8 +27,8 @@ helm:
 
 ingress:
   hosts:
-    prometheus-server: prometheus.k8s-tfm.tk
-    alert-manager: prometheus-alertmanager.k8s-tfm.tk
+    prometheus_server: prometheus.k8s-tfm.tk
+    alert_manager: prometheus-alertmanager.k8s-tfm.tk
     grafana: grafana.k8s-tfm.tk
     minio: minio.k8s-tfm.tk
-    minio-console: minio-console.k8s-tfm.tk
+    minio_console: minio-console.k8s-tfm.tk
