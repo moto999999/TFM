@@ -14,7 +14,7 @@ resource "google_compute_subnetwork" "control_plane_subnet" {
   name          = var.subnetwork_name["control_plane"]
   ip_cidr_range = var.ip_cidr_range["control_plane"]
   network       = google_compute_network.k8s_network.id
-  region        = "europe-west1"
+  region        = "europe-west2"
 }
 
 resource "google_compute_subnetwork" "worker_subnet" {

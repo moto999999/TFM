@@ -34,7 +34,7 @@ resource "google_compute_router" "router_west1" {
 resource "google_compute_router_nat" "nat_west1" {
   name                               = "router-k8s-nat"
   router                             = google_compute_router.router_west1.name
-  region                             = "europe-west1"
+  region                             = "europe-west2"
   nat_ip_allocate_option             = "AUTO_ONLY"
   source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
 
