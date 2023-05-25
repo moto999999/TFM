@@ -1,0 +1,6 @@
+FROM immoral36/api
+
+RUN pip3 install flask-cors
+
+COPY __init__.py /app/app/__init__.py
+RUN chmod +x /app/app/__init__.py
