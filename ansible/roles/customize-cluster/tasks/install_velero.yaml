@@ -27,7 +27,7 @@
 - name: Copy ingress routes to bastion
   template:
     src: configuration_files/ingress_routes_minio.yaml
-    dest: "{{ ansible_env.HOME }}/ingress_routes.yaml"
+    dest: "{{ ansible_env.HOME }}/ingress_routes_minio.yaml"
   when: inventory_hostname in groups['bastion']
 
 - name: Apply ingress rule

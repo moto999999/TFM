@@ -26,7 +26,7 @@
 
 - name: Copy ingress routes to bastion
   template:
-    src: configuration_files/ingress_routes.yaml
+    src: configuration_files/ingress_routes_monitoring.yaml
     dest: "{{ ansible_env.HOME }}/ingress_routes_monitoring.yaml"
   when: inventory_hostname in groups['bastion']
 
