@@ -51,7 +51,7 @@ variable "number_control_planes" {
 
 variable "number_workers" {
   type    = number
-  default = 2
+  default = 3
 }
 
 variable "certificate" {
