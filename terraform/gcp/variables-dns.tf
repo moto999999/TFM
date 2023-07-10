@@ -5,5 +5,5 @@ variable "dns_name" {
 
 variable "dns_names" {
   type = list(string)
-  default = ["prometheus", "prometheus-alertmanager", "grafana", "minio", "minio-console"]
+  default = ["prometheus", "prometheus-alertmanager", "grafana", "minio", "minio-console", "api", "webapp"]
 }
