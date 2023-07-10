@@ -7,7 +7,7 @@ terraform {
   }
 
   backend "gcs" {
-    bucket = "terraform_state_5342"
+    bucket = "tfm-uc3m-392409"
     prefix = "terraform/state"
   }
 }
